@@ -137,6 +137,30 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   margin-bottom:0;
 }
 
+
+.modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+.modal-head .modal-title{
+  margin-bottom:0;
+}
+.modal-close-btn{
+  width:36px;
+  height:36px;
+  border:0;
+  border-radius:12px;
+  background:#f3f4f6;
+  color:#374151;
+  font-size:22px;
+  font-weight:950;
+  cursor:pointer;
+  line-height:1;
+}
+
 </style>
 </head>
 <body>
@@ -173,7 +197,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 </div>
 
 <div class="modal-backdrop" id="itemModalBackdrop"><div class="modal-wrap"><div class="modal">
-  <div class="modal-title" id="itemModalTitle">추가</div>
+  <div class="modal-head"><div class="modal-title" id="itemModalTitle">추가</div><button class="modal-close-btn" id="closeItemModalBtn">×</button></div>
   <div class="type-row"><button class="type-btn income active" id="incomeTypeBtn">+ 수입</button><button class="type-btn expense" id="expenseTypeBtn">- 지출</button></div>
   <div class="field"><label>일자</label><input class="input" id="dayInput" type="number" inputmode="numeric" min="1" max="31" placeholder="예: 25"></div>
   <div class="field"><label>이름</label><input class="input" id="nameInput" placeholder="예: 월급, 식비, 카드값"></div>
@@ -184,13 +208,13 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 </div></div></div>
 
 <div class="modal-backdrop" id="sheetModalBackdrop"><div class="modal-wrap"><div class="modal">
-  <div class="modal-title" id="sheetModalTitle">지출표 이름</div>
+  <div class="modal-head"><div class="modal-title" id="sheetModalTitle">지출표 이름</div><button class="modal-close-btn" id="closeSheetModalBtn">×</button></div>
   <div class="field"><label>이름</label><input class="input" id="sheetNameInput" placeholder="예: 6월 예산, 7월 생활비"></div>
   <div class="modal-actions"><button class="action-btn cancel-btn" id="cancelSheetBtn">취소</button><button class="action-btn save-btn" id="saveSheetBtn">저장</button></div>
 </div></div></div>
 
 <div class="modal-backdrop" id="githubModalBackdrop"><div class="modal-wrap"><div class="modal">
-  <div class="modal-title">GitHub 설정</div>
+  <div class="modal-head"><div class="modal-title">GitHub 설정</div><button class="modal-close-btn" id="closeGithubModalBtn">×</button></div>
   <div class="field"><label>Owner</label><input class="input" id="ghOwnerInput" value="kwonjinbeom"></div>
   <div class="field"><label>Repo</label><input class="input" id="ghRepoInput" value="budget_manage"></div>
   <div class="field"><label>Branch</label><input class="input" id="ghBranchInput" value="main"></div>
@@ -236,16 +260,16 @@ $("exportBtn").onclick=exportData;$("importBtn").onclick=()=>importFileInput.cli
 $("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;
 drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
 
-$("addBtn").onclick=()=>openItemModal();$("cancelItemBtn").onclick=closeItemModal;$("saveItemBtn").onclick=saveItem;deleteItemBtn.onclick=deleteItem;
-itemModalBackdrop.onclick=e=>{if(e.target===itemModalBackdrop||e.target.classList.contains("modal-wrap"))closeItemModal()};
+$("addBtn").onclick=()=>openItemModal();$("cancelItemBtn").onclick=closeItemModal;$("closeItemModalBtn").onclick=closeItemModal;$("saveItemBtn").onclick=saveItem;deleteItemBtn.onclick=deleteItem;
+itemModalBackdrop.onclick=e=>{};
 incomeTypeBtn.onclick=()=>setType("income");expenseTypeBtn.onclick=()=>setType("expense");
 amountInput.addEventListener("input", formatAmountInput);
 
-$("cancelSheetBtn").onclick=closeSheetModal;$("saveSheetBtn").onclick=saveSheetName;
-sheetModalBackdrop.onclick=e=>{if(e.target===sheetModalBackdrop||e.target.classList.contains("modal-wrap"))closeSheetModal()};
+$("cancelSheetBtn").onclick=closeSheetModal;$("closeSheetModalBtn").onclick=closeSheetModal;$("saveSheetBtn").onclick=saveSheetName;
+sheetModalBackdrop.onclick=e=>{};
 
-$("cancelGithubBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;
-githubModalBackdrop.onclick=e=>{if(e.target===githubModalBackdrop||e.target.classList.contains("modal-wrap"))closeGithubModal()};
+$("cancelGithubBtn").onclick=closeGithubModal;$("closeGithubModalBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;
+githubModalBackdrop.onclick=e=>{};
 
 function newId(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
 function loadState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY));if(s&&s.sheets&&s.sheets.length)return s}catch{}const id=newId();return{version:EXPORT_VERSION,currentSheetId:id,sheets:[{id,name:"기본 예산표",items:[]}]}}
