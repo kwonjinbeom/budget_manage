@@ -77,6 +77,34 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 .sheet-edit{background:#eef2ff;color:#3730a3}.sheet-delete{background:#fee2e2;color:#b91c1c}
 .hidden-file{display:none}
 .warn{font-size:12px;color:#6b7280;line-height:1.45;margin-top:8px}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:92px;
+  transform:translateX(-50%) translateY(16px);
+  max-width:min(460px,calc(100vw - 32px));
+  background:#111827;
+  color:white;
+  padding:12px 16px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:850;
+  box-shadow:0 12px 30px rgba(17,24,39,.25);
+  opacity:0;
+  pointer-events:none;
+  transition:.18s ease;
+  z-index:30;
+  text-align:center;
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+.toast.error{
+  background:#b91c1c;
+}
+
 </style>
 </head>
 <body>
@@ -142,6 +170,8 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   <div class="modal-actions"><button class="action-btn cancel-btn" id="cancelGithubBtn">취소</button><button class="action-btn save-btn" id="saveGithubSettingBtn">저장</button></div>
 </div></div></div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 const STORAGE_KEY="simple_budget_sheets_v2";
 const GH_KEY="simple_budget_github_setting_v1";
@@ -151,6 +181,7 @@ const AUTOSAVE_DELAY=0;
 let state=normalizeState(loadState());
 let editingItemId=null, selectedType="income", sheetMode="rename", editingSheetId=null;
 let autoSaveTimer=null;
+let toastTimer=null;
 let isApplyingRemote=false;
 let lastGithubSha="";
 let lastSyncText="자동 동기화 대기 중";
@@ -217,6 +248,17 @@ function deleteSheet(id){if(state.sheets.length<=1){alert("지출표는 최소 1
 function exportData(){const data={app:"simple_budget_sheets",version:EXPORT_VERSION,exportedAt:new Date().toISOString(),state:normalizeState(state)};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const d=new Date(),fn=`budget-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`;const a=document.createElement("a");a.href=url;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
 function importData(e){const file=e.target.files&&e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result),s=p.state||p;if(!s||!Array.isArray(s.sheets)){alert("가져올 수 없는 파일이야.");return}if(!confirm("현재 데이터가 가져온 파일 내용으로 바뀌어. 계속할까?"))return;state=normalizeState(s);saveState();closeDrawer();render();scheduleAutoSave();alert("가져오기 완료.")}catch{alert("파일을 읽는 중 오류가 났어.")}finally{importFileInput.value=""}};r.readAsText(file,"utf-8")}
 
+
+function showToast(message,type="normal"){
+ const el=$("toast");
+ if(!el)return;
+ el.textContent=message;
+ el.classList.toggle("error",type==="error");
+ el.classList.add("show");
+ clearTimeout(toastTimer);
+ toastTimer=setTimeout(()=>el.classList.remove("show"),1800);
+}
+
 function getGithubSetting(){try{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true,...JSON.parse(localStorage.getItem(GH_KEY)||"{}")}}catch{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true}}}
 function saveGithubSetting(){const s={owner:$("ghOwnerInput").value.trim(),repo:$("ghRepoInput").value.trim(),branch:$("ghBranchInput").value.trim()||"main",path:$("ghPathInput").value.trim()||"data.json",token:$("ghTokenInput").value.trim(),autoLoad:true,autoSave:true};if(!s.owner||!s.repo||!s.token){alert("Owner, Repo, Token은 필요해.");return}localStorage.setItem(GH_KEY,JSON.stringify(s));closeGithubModal();render();loadFromGithub({manual:false});alert("GitHub 설정 저장 완료. 이제 실행 시 자동 불러오기, 수정 시 자동 저장이 동작해.")}
 function openGithubModal(){const s=getGithubSetting();$("ghOwnerInput").value=s.owner;$("ghRepoInput").value=s.repo;$("ghBranchInput").value=s.branch;$("ghPathInput").value=s.path;$("ghTokenInput").value=s.token;githubModalBackdrop.classList.add("open")}
@@ -256,8 +298,8 @@ async function saveToGithub({manual=false}={}){
  const res=await fetch(url,{method:"PUT",headers:{...ghHeaders(s.token),"Content-Type":"application/json"},body:JSON.stringify(body)});
  if(!res.ok)throw new Error(`${res.status} ${await res.text()}`);
  const result=await res.json();lastGithubSha=result.content&&result.content.sha?result.content.sha:"";
- lastSyncText=`GitHub 저장 완료 ${nowText()}`;updateGithubStatus();if(manual)alert("GitHub 저장 완료.")
- }catch(e){console.error(e);lastSyncText=`저장 실패 ${nowText()}`;updateGithubStatus();if(manual)alert("GitHub 저장 실패. 토큰 권한, repo 이름, branch를 확인해줘.")}
+ lastSyncText=`GitHub 저장 완료 ${nowText()}`;updateGithubStatus();showToast(`GitHub 저장 완료 ${nowText()}`);if(manual)console.log("GitHub 저장 완료.")
+ }catch(e){console.error(e);lastSyncText=`저장 실패 ${nowText()}`;updateGithubStatus();showToast("GitHub 저장 실패","error");if(manual)alert("GitHub 저장 실패. 토큰 권한, repo 이름, branch를 확인해줘.")}
 }
 
 saveState();
