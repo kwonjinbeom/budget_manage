@@ -1,14 +1,14 @@
 {
   "app": "simple_budget_sheets",
   "version": 7,
-  "updatedAt": "2026-06-09T05:21:45.837Z",
+  "updatedAt": "2026-06-09T05:22:12.559Z",
   "state": {
     "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
     "sheets": [
       {
         "id": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
-        "name": "기본 예산표",
+        "name": "지출표~~~260609",
         "items": [
           {
             "id": "d4913710-a72b-43e8-bbdc-9d0265115d97",
