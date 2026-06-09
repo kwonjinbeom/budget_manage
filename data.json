@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 7,
-  "updatedAt": "2026-06-09T05:21:06.293Z",
+  "updatedAt": "2026-06-09T05:21:12.604Z",
   "state": {
     "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -20,22 +20,13 @@
             "order": 0
           },
           {
-            "id": "08318bb2-899e-4982-8d9c-8024e5c8e3c6",
-            "name": "ddd",
-            "amount": 123,
-            "type": "income",
-            "day": 12,
-            "note": "",
-            "order": 1
-          },
-          {
             "id": "854fb5d2-bbcf-4e87-a269-7429d4cbe4c8",
             "name": "333",
             "amount": 2,
             "type": "income",
             "day": 12,
             "note": "",
-            "order": 2
+            "order": 1
           },
           {
             "id": "04bf47bd-f010-47fb-a63c-b85c294b82a7",
@@ -44,7 +35,7 @@
             "type": "income",
             "day": 23,
             "note": "",
-            "order": 3
+            "order": 2
           },
           {
             "id": "400a9530-efd7-4df6-9bbf-cdeeab07b561",
@@ -53,7 +44,7 @@
             "type": "income",
             "day": 12,
             "note": "",
-            "order": 4
+            "order": 3
           },
           {
             "id": "f62368f1-bb27-4e8d-baab-b0013225ca81",
@@ -62,7 +53,7 @@
             "type": "income",
             "day": 2,
             "note": "",
-            "order": 5
+            "order": 4
           },
           {
             "id": "f039cc2f-ff79-45ea-ade4-85f4bc783b73",
@@ -71,7 +62,7 @@
             "type": "income",
             "day": 3,
             "note": "",
-            "order": 6
+            "order": 5
           },
           {
             "id": "f4d00222-de72-491f-b9c6-1083010963ca",
@@ -80,7 +71,7 @@
             "type": "income",
             "day": 2,
             "note": "",
-            "order": 7
+            "order": 6
           }
         ]
       }
