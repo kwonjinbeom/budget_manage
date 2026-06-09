@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 7,
-  "updatedAt": "2026-06-09T05:23:05.369Z",
+  "updatedAt": "2026-06-09T05:23:06.814Z",
   "state": {
     "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -11,20 +11,20 @@
         "name": "지출표~~~260609",
         "items": [
           {
-            "id": "400a9530-efd7-4df6-9bbf-cdeeab07b561",
-            "name": "sdsd",
-            "amount": 2323,
-            "type": "income",
-            "day": 12,
-            "note": "",
-            "order": 0
-          },
-          {
             "id": "d4913710-a72b-43e8-bbdc-9d0265115d97",
             "name": "집 월세",
             "amount": 600000,
             "type": "expense",
             "day": 1,
+            "note": "",
+            "order": 0
+          },
+          {
+            "id": "400a9530-efd7-4df6-9bbf-cdeeab07b561",
+            "name": "sdsd",
+            "amount": 2323,
+            "type": "income",
+            "day": 12,
             "note": "",
             "order": 1
           },
