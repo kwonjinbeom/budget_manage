@@ -1538,8 +1538,8 @@ let dino={x:70,y:0,w:38,h:48,vy:0,onGround:true};
 const DINO_W=820;
 const DINO_H=320;
 const DINO_GROUND=255;
-const DINO_GRAVITY=2600;
-const DINO_JUMP=-660;
+const DINO_GRAVITY=1900;
+const DINO_JUMP=-690;
 
 function initDinoIfNeeded(){
  if(dinoCtx)return;
@@ -1609,8 +1609,9 @@ function jumpDino(){
 }
 function setDinoDuck(flag){dinoDuck=!!flag}
 function spawnDinoObstacle(){
- const isBird=dinoScoreValue>600&&Math.random()<0.22;
- const size=28+Math.random()*16;
+ const birdChance=Math.min(Math.max((dinoScoreValue-700)/2500,0),0.2);
+ const isBird=dinoScoreValue>700&&Math.random()<birdChance;
+ const size=26+Math.random()*12;
  dinoObstacles.push({
    x:DINO_W+20,
    y:isBird?DINO_GROUND-86:DINO_GROUND-size,
@@ -1629,10 +1630,10 @@ function dinoLoop(ts){
  dinoAnimId=requestAnimationFrame(dinoLoop);
 }
 function updateDino(dt){
- dinoScoreValue+=dt*55*dinoSpeed;
- const speedBaseScore=Math.max(0,dinoScoreValue-300);
- dinoSpeed=1+Math.min(speedBaseScore/1800,1.35);
- const runSpeed=245*dinoSpeed;
+ dinoScoreValue+=dt*65*dinoSpeed;
+ const speedDifficulty=Math.max(0,dinoScoreValue-200);
+ dinoSpeed=1+Math.min(speedDifficulty/2200,1.25);
+ const runSpeed=285*dinoSpeed;
  dinoGroundX=(dinoGroundX-runSpeed*dt)%34;
  dino.vy+=DINO_GRAVITY*dt;
  dino.y+=dino.vy*dt;
@@ -1654,7 +1655,13 @@ function updateDino(dt){
  }
  for(const ob of dinoObstacles)ob.x-=runSpeed*dt;
  dinoObstacles=dinoObstacles.filter(o=>o.x+o.w>-30);
- if(!dinoObstacles.length||dinoObstacles[dinoObstacles.length-1].x<DINO_W-(330+Math.random()*240))spawnDinoObstacle();
+ const lastObstacle=dinoObstacles[dinoObstacles.length-1];
+ const speedGap=(dinoSpeed-1)*180;
+ const scorePressure=Math.min(Math.max((dinoScoreValue-500)/2500,0),1)*70;
+ const minGap=500+speedGap-scorePressure;
+ const randomGap=250+(dinoSpeed-1)*80;
+ const nextGap=minGap+Math.random()*randomGap;
+ if(!lastObstacle||lastObstacle.x<DINO_W-nextGap)spawnDinoObstacle();
  for(const ob of dinoObstacles){
    if(rectHit(getDinoHitBox(),{x:ob.x+3,y:ob.y+3,w:ob.w-6,h:ob.h-6})){
      endDino();
