@@ -450,6 +450,31 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   border-radius:14px;
 }
 
+
+.dino-page{padding-bottom:20px}
+.dino-wrap{display:flex;flex-direction:column;gap:10px}
+.dino-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dino-actions button,.dino-controls button{
+  border:0;border-radius:14px;background:#f3f4f6;color:#111827;
+  font-size:15px;font-weight:950;min-height:44px;cursor:pointer
+}
+.dino-stage{background:#111827;border-radius:20px;padding:10px}
+.dino-score-box{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  background:rgba(255,255,255,.08);color:#fff;border-radius:14px;
+  padding:9px 10px;margin-bottom:10px
+}
+.dino-score-row{display:flex;align-items:center;gap:6px;font-size:12px}
+.dino-score-row span:first-child{color:#9ca3af;font-weight:800}
+.dino-score-row span:last-child{font-weight:950}
+#dinoCanvas{
+  width:100%;max-width:720px;height:auto;display:block;margin:0 auto;
+  background:#f9fafb;border-radius:12px
+}
+.dino-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#dinoJumpBtn{background:#111827;color:#fff}
+#dinoDuckBtn{background:#f3f4f6}
+
 </style>
 </head>
 <body>
@@ -519,15 +544,52 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
       <div class="tetris-help">PC: ←/→ 이동, Ctrl 회전, ↑ 바로 떨구기, ↓ 내리기, P 일시정지</div>
     </div>
   </div>
+
+  <div id="dinoView" class="view-page dino-page">
+    <div class="header">
+      <button class="menu-btn" id="menuBtnDino">☰</button>
+      <div class="title-area">
+        <div class="title">공룡게임</div>
+        <div class="subtitle">점프해서 장애물을 피하는 게임</div>
+      </div>
+      <button class="score-btn" id="dinoScoreBoardBtn">스코어</button>
+    </div>
+
+    <div class="dino-wrap">
+      <div class="dino-actions">
+        <button id="dinoStartBtn">시작</button>
+        <button id="dinoPauseBtn">일시정지</button>
+        <button id="dinoRestartBtn">다시시작</button>
+      </div>
+
+      <div class="dino-stage">
+        <div class="dino-score-box">
+          <div class="dino-score-row"><span>점수</span><span id="dinoScore">0</span></div>
+          <div class="dino-score-row"><span>최고</span><span id="dinoBest">0</span></div>
+          <div class="dino-score-row"><span>속도</span><span id="dinoSpeed">1.0x</span></div>
+        </div>
+        <canvas id="dinoCanvas" width="720" height="260"></canvas>
+      </div>
+
+      <div class="dino-controls">
+        <button id="dinoJumpBtn">점프<span class="key-hint">↑ / Space</span></button>
+        <button id="dinoDuckBtn">숙이기<span class="key-hint">↓</span></button>
+      </div>
+
+      <div class="tetris-help">PC: ↑/Space 점프, ↓ 숙이기, P 일시정지<br>폰: 아래 버튼으로 조작</div>
+    </div>
+  </div>
+
 </main>
 <button class="fab" id="addBtn">+ 추가</button>
 
 <div class="drawer-backdrop" id="drawerBackdrop">
   <aside class="drawer">
     <div class="drawer-head"><div class="drawer-title">지출표 목록</div><button class="drawer-close" id="drawerCloseBtn">×</button></div>
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:1fr 1fr 1fr">
       <button class="menu-section-btn active" id="showBudgetBtn">가계부</button>
       <button class="menu-section-btn" id="showTetrisBtn">테트리스</button>
+      <button class="menu-section-btn" id="showDinoBtn">공룡게임</button>
     </div>
     <button class="new-sheet-btn" id="newSheetBtn">+ 새 지출표 만들기</button>
     <div class="grid2"><button class="side-btn" id="exportBtn">내보내기</button><button class="side-btn" id="importBtn">가져오기</button></div>
@@ -646,7 +708,7 @@ const itemModalBackdrop=$("itemModalBackdrop"), itemModalTitle=$("itemModalTitle
 const sheetModalBackdrop=$("sheetModalBackdrop"), sheetModalTitle=$("sheetModalTitle"), sheetNameInput=$("sheetNameInput");
 const githubModalBackdrop=$("githubModalBackdrop"), importFileInput=$("importFileInput");
 
-$("menuBtn").onclick=openDrawer;$("menuBtnTetris").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("showBudgetBtn").onclick=()=>setMainView("budget");$("showTetrisBtn").onclick=()=>setMainView("tetris");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);$("scoreBoardBtn").onclick=openScoreBoardModal;summaryToggleBtn.onclick=toggleSummary;
+$("menuBtn").onclick=openDrawer;$("menuBtnTetris").onclick=openDrawer;$("menuBtnDino").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("showBudgetBtn").onclick=()=>setMainView("budget");$("showTetrisBtn").onclick=()=>setMainView("tetris");$("showDinoBtn").onclick=()=>setMainView("dino");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);$("scoreBoardBtn").onclick=()=>openGameScoreBoardModal("tetris");$("dinoScoreBoardBtn").onclick=()=>openGameScoreBoardModal("dino");summaryToggleBtn.onclick=toggleSummary;
 $("exportBtn").onclick=exportData;$("importBtn").onclick=()=>importFileInput.click();importFileInput.onchange=importData;
 $("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;gitEnabledToggle.onchange=toggleGitEnabled;
 drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
@@ -669,7 +731,7 @@ function getActiveStorageKey(){
 
 function newId(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
 function loadState(){try{const s=JSON.parse(localStorage.getItem(getActiveStorageKey()));if(s&&s.sheets&&s.sheets.length)return s}catch{}const id=newId();return{version:EXPORT_VERSION,currentSheetId:id,sheets:[{id,name:"기본 예산표",items:[]}]}}
-function normalizeState(raw){if(!raw||!Array.isArray(raw.sheets)||!raw.sheets.length)raw=loadState();raw.version=EXPORT_VERSION;raw.sheets=raw.sheets.map((s,si)=>{const ns={id:s.id||newId(),name:s.name||`예산표 ${si+1}`,items:Array.isArray(s.items)?s.items:[]};ns.items=ns.items.map((it,i)=>({id:it.id||newId(),name:it.name||"이름 없음",amount:Number(it.amount)||0,type:it.type==="expense"?"expense":"income",day:it.day===""||it.day==null?"":Number(it.day),note:it.note||"",order:Number.isFinite(Number(it.order))?Number(it.order):i}));ns.items.sort((a,b)=>a.order-b.order).forEach((it,i)=>it.order=i);return ns});if(!raw.currentSheetId||!raw.sheets.some(s=>s.id===raw.currentSheetId))raw.currentSheetId=raw.sheets[0].id;if(!raw.games)raw.games={};if(!raw.games.tetris)raw.games.tetris={bestScore:0,records:[]};raw.games.tetris.bestScore=Number(raw.games.tetris.bestScore)||0;if(!Array.isArray(raw.games.tetris.records))raw.games.tetris.records=[];raw.games.tetris.records=raw.games.tetris.records.map(r=>({id:r.id||newId(),name:String(r.name||"익명"),score:Number(r.score)||0,dt:r.dt||""})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,50);return raw}
+function normalizeState(raw){if(!raw||!Array.isArray(raw.sheets)||!raw.sheets.length)raw=loadState();raw.version=EXPORT_VERSION;raw.sheets=raw.sheets.map((s,si)=>{const ns={id:s.id||newId(),name:s.name||`예산표 ${si+1}`,items:Array.isArray(s.items)?s.items:[]};ns.items=ns.items.map((it,i)=>({id:it.id||newId(),name:it.name||"이름 없음",amount:Number(it.amount)||0,type:it.type==="expense"?"expense":"income",day:it.day===""||it.day==null?"":Number(it.day),note:it.note||"",order:Number.isFinite(Number(it.order))?Number(it.order):i}));ns.items.sort((a,b)=>a.order-b.order).forEach((it,i)=>it.order=i);return ns});if(!raw.currentSheetId||!raw.sheets.some(s=>s.id===raw.currentSheetId))raw.currentSheetId=raw.sheets[0].id;if(!raw.games)raw.games={};if(!raw.games.tetris)raw.games.tetris={bestScore:0,records:[]};if(!raw.games.dino)raw.games.dino={bestScore:0,records:[]};["tetris","dino"].forEach(g=>{raw.games[g].bestScore=Number(raw.games[g].bestScore)||0;if(!Array.isArray(raw.games[g].records))raw.games[g].records=[];raw.games[g].records=raw.games[g].records.map(r=>({id:r.id||newId(),name:String(r.name||"익명"),score:Number(r.score)||0,dt:r.dt||""})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,50);});return raw}
 function saveState(){state=normalizeState(state);localStorage.setItem(getActiveStorageKey(),JSON.stringify(state))}
 function commitChange(){saveState();render();scheduleAutoSave()}
 function getCurrentSheet(){let s=state.sheets.find(x=>x.id===state.currentSheetId);if(!s){s=state.sheets[0];state.currentSheetId=s.id;saveState()}return s}
@@ -695,14 +757,18 @@ function toggleSummary(){
 let currentMainView="budget";
 
 function setMainView(view){
- currentMainView=view==="tetris"?"tetris":"budget";
+ currentMainView=(view==="tetris"||view==="dino")?view:"budget";
+ const isBudget=currentMainView==="budget";
  const isTetris=currentMainView==="tetris";
+ const isDino=currentMainView==="dino";
 
- $("budgetView").classList.toggle("active",!isTetris);
+ $("budgetView").classList.toggle("active",isBudget);
  $("tetrisView").classList.toggle("active",isTetris);
- $("addBtn").style.display=isTetris?"none":"block";
- $("showBudgetBtn").classList.toggle("active",!isTetris);
+ $("dinoView").classList.toggle("active",isDino);
+ $("addBtn").style.display=isBudget?"block":"none";
+ $("showBudgetBtn").classList.toggle("active",isBudget);
  $("showTetrisBtn").classList.toggle("active",isTetris);
+ $("showDinoBtn").classList.toggle("active",isDino);
 
  closeDrawer();
 
@@ -710,58 +776,58 @@ function setMainView(view){
    initTetrisIfNeeded();
    drawTetris();
  }
+ if(isDino){
+   initDinoIfNeeded();
+   drawDino();
+ }
 }
 
 
-let pendingTetrisScore=0;
 
-function getTetrisRecords(){
+let pendingGameScore=0;
+let pendingGameKey="tetris";
+let scoreBoardGameKey="tetris";
+
+function getGameLabel(gameKey){
+ return gameKey==="dino"?"공룡게임":"테트리스";
+}
+function getGameRecords(gameKey){
  state=normalizeState(state);
- return state.games.tetris.records||[];
+ return (state.games[gameKey]&&state.games[gameKey].records)||[];
 }
-
-function openScoreNameModal(score){
- pendingTetrisScore=Number(score)||0;
- if(pendingTetrisScore<=0)return;
- $("scoreNameInput").value=localStorage.getItem("simple_budget_last_tetris_name")||"";
- $("scoreValueInput").value=String(pendingTetrisScore);
+function openScoreNameModal(score,gameKey="tetris"){
+ pendingGameScore=Number(score)||0;
+ pendingGameKey=gameKey;
+ if(pendingGameScore<=0)return;
+ $("scoreNameInput").value=localStorage.getItem("simple_budget_last_game_name")||localStorage.getItem("simple_budget_last_tetris_name")||"";
+ $("scoreValueInput").value=String(pendingGameScore);
+ const title=$("scoreNameModalBackdrop").querySelector(".modal-title");
+ if(title)title.textContent=`${getGameLabel(gameKey)} 스코어 기록`;
  $("scoreNameModalBackdrop").classList.add("open");
  setTimeout(()=>$("scoreNameInput").focus(),50);
 }
-
 function closeScoreNameModal(){
  $("scoreNameModalBackdrop").classList.remove("open");
- pendingTetrisScore=0;
+ pendingGameScore=0;
 }
-
 function saveScoreRecord(){
  const name=($("scoreNameInput").value||"").trim()||"익명";
- const score=pendingTetrisScore||Number($("scoreValueInput").value)||0;
- if(score<=0){
-   closeScoreNameModal();
-   return;
- }
+ const score=pendingGameScore||Number($("scoreValueInput").value)||0;
+ const gameKey=pendingGameKey||"tetris";
+ if(score<=0){closeScoreNameModal();return}
+ localStorage.setItem("simple_budget_last_game_name",name);
  localStorage.setItem("simple_budget_last_tetris_name",name);
  state=normalizeState(state);
- state.games.tetris.records.push({
-   id:newId(),
-   name,
-   score,
-   dt:new Date().toISOString()
- });
- state.games.tetris.records=state.games.tetris.records
-   .sort((a,b)=>Number(b.score)-Number(a.score))
-   .slice(0,50);
- if(score>Number(state.games.tetris.bestScore||0)){
-   state.games.tetris.bestScore=score;
- }
+ state.games[gameKey].records.push({id:newId(),name,score,dt:new Date().toISOString()});
+ state.games[gameKey].records=state.games[gameKey].records.sort((a,b)=>Number(b.score)-Number(a.score)).slice(0,50);
+ if(score>Number(state.games[gameKey].bestScore||0))state.games[gameKey].bestScore=score;
  closeScoreNameModal();
  commitChange();
- updateTetrisInfo();
+ if(gameKey==="tetris")updateTetrisInfo();
+ if(gameKey==="dino")updateDinoInfo();
  showToast("스코어 저장 완료");
- openScoreBoardModal();
+ openGameScoreBoardModal(gameKey);
 }
-
 function formatScoreDate(iso){
  if(!iso)return "";
  const d=new Date(iso);
@@ -773,19 +839,18 @@ function formatScoreDate(iso){
  const mi=String(d.getMinutes()).padStart(2,"0");
  return `${yy}.${mm}.${dd} ${hh}:${mi}`;
 }
-
-function openScoreBoardModal(){
+function openGameScoreBoardModal(gameKey="tetris"){
+ scoreBoardGameKey=gameKey;
  renderScoreBoard();
+ const title=$("scoreBoardModalBackdrop").querySelector(".modal-title");
+ if(title)title.textContent=`${getGameLabel(gameKey)} 스코어 현황`;
  $("scoreBoardModalBackdrop").classList.add("open");
 }
-
-function closeScoreBoardModal(){
- $("scoreBoardModalBackdrop").classList.remove("open");
-}
-
+function openScoreBoardModal(){openGameScoreBoardModal("tetris")}
+function closeScoreBoardModal(){$("scoreBoardModalBackdrop").classList.remove("open")}
 function renderScoreBoard(){
  const list=$("scoreList");
- const records=getTetrisRecords();
+ const records=getGameRecords(scoreBoardGameKey);
  if(!records.length){
    list.innerHTML='<div class="score-empty">아직 저장된 스코어가 없어.</div>';
    return;
@@ -801,14 +866,15 @@ function renderScoreBoard(){
    </div>
  `).join("");
 }
-
 function clearScoreBoard(){
  if(!confirm("스코어 기록을 전부 삭제할까?"))return;
+ const gameKey=scoreBoardGameKey||"tetris";
  state=normalizeState(state);
- state.games.tetris.records=[];
- state.games.tetris.bestScore=0;
+ state.games[gameKey].records=[];
+ state.games[gameKey].bestScore=0;
  commitChange();
- updateTetrisInfo();
+ if(gameKey==="tetris")updateTetrisInfo();
+ if(gameKey==="dino")updateDinoInfo();
  renderScoreBoard();
  showToast("스코어 삭제 완료");
 }
@@ -1020,7 +1086,7 @@ function endTetris(){
  drawTetris();
  showToast("테트리스 종료");
  if(tetrisScoreValue>0){
-   openScoreNameModal(tetrisScoreValue);
+   openScoreNameModal(tetrisScoreValue,"tetris");
  }
 }
 
@@ -1455,6 +1521,247 @@ async function saveToGithub({manual=false}={}){
    }
  }
 }
+
+/* Dino */
+let dinoCtx=null;
+let dinoRunning=false;
+let dinoPaused=false;
+let dinoAnimId=null;
+let dinoLastTs=0;
+let dinoScoreValue=0;
+let dinoSpeed=1;
+let dinoObstacles=[];
+let dinoClouds=[];
+let dinoGroundX=0;
+let dinoDuck=false;
+let dino={x:70,y:0,w:38,h:48,vy:0,onGround:true};
+const DINO_W=720;
+const DINO_H=260;
+const DINO_GROUND=205;
+const DINO_GRAVITY=1900;
+const DINO_JUMP=-690;
+
+function initDinoIfNeeded(){
+ if(dinoCtx)return;
+ const canvas=$("dinoCanvas");
+ dinoCtx=canvas.getContext("2d");
+ $("dinoStartBtn").onclick=startDino;
+ $("dinoPauseBtn").onclick=toggleDinoPause;
+ $("dinoRestartBtn").onclick=startDino;
+ $("dinoJumpBtn").onclick=jumpDino;
+ $("dinoDuckBtn").onpointerdown=()=>setDinoDuck(true);
+ $("dinoDuckBtn").onpointerup=()=>setDinoDuck(false);
+ $("dinoDuckBtn").onpointerleave=()=>setDinoDuck(false);
+ document.addEventListener("keydown",handleDinoKeyDown);
+ document.addEventListener("keyup",handleDinoKeyUp);
+ resetDino();
+ drawDino();
+}
+function handleDinoKeyDown(e){
+ if(currentMainView!=="dino")return;
+ if(["ArrowUp","ArrowDown"," ","p","P"].includes(e.key))e.preventDefault();
+ if(e.key==="ArrowUp"||e.key===" ")jumpDino();
+ else if(e.key==="ArrowDown")setDinoDuck(true);
+ else if(e.key==="p"||e.key==="P")toggleDinoPause();
+}
+function handleDinoKeyUp(e){
+ if(currentMainView!=="dino")return;
+ if(e.key==="ArrowDown")setDinoDuck(false);
+}
+function resetDino(){
+ dinoRunning=false;
+ dinoPaused=false;
+ cancelAnimationFrame(dinoAnimId);
+ dinoAnimId=null;
+ dinoLastTs=0;
+ dinoScoreValue=0;
+ dinoSpeed=1;
+ dinoObstacles=[];
+ dinoClouds=[{x:160,y:56,w:46},{x:430,y:38,w:62},{x:650,y:70,w:42}];
+ dinoGroundX=0;
+ dinoDuck=false;
+ dino={x:70,y:DINO_GROUND-48,w:38,h:48,vy:0,onGround:true};
+ updateDinoInfo();
+}
+function startDino(){
+ resetDino();
+ dinoRunning=true;
+ dinoPaused=false;
+ spawnDinoObstacle();
+ dinoAnimId=requestAnimationFrame(dinoLoop);
+}
+function toggleDinoPause(){
+ if(!dinoRunning)return;
+ dinoPaused=!dinoPaused;
+ if(!dinoPaused){
+   dinoLastTs=0;
+   dinoAnimId=requestAnimationFrame(dinoLoop);
+ }
+ drawDino();
+}
+function jumpDino(){
+ if(!dinoRunning){startDino();return}
+ if(dinoPaused)return;
+ if(dino.onGround){
+   dino.vy=DINO_JUMP;
+   dino.onGround=false;
+ }
+}
+function setDinoDuck(flag){dinoDuck=!!flag}
+function spawnDinoObstacle(){
+ const isBird=dinoScoreValue>250&&Math.random()<0.28;
+ const size=28+Math.random()*16;
+ dinoObstacles.push({
+   x:DINO_W+20,
+   y:isBird?DINO_GROUND-86:DINO_GROUND-size,
+   w:isBird?38:size,
+   h:isBird?24:size,
+   type:isBird?"bird":"cactus"
+ });
+}
+function dinoLoop(ts){
+ if(!dinoRunning||dinoPaused)return;
+ if(!dinoLastTs)dinoLastTs=ts;
+ const dt=Math.min((ts-dinoLastTs)/1000,0.035);
+ dinoLastTs=ts;
+ updateDino(dt);
+ drawDino();
+ dinoAnimId=requestAnimationFrame(dinoLoop);
+}
+function updateDino(dt){
+ dinoScoreValue+=dt*65*dinoSpeed;
+ dinoSpeed=1+Math.min(dinoScoreValue/900,1.9);
+ const runSpeed=285*dinoSpeed;
+ dinoGroundX=(dinoGroundX-runSpeed*dt)%34;
+ dino.vy+=DINO_GRAVITY*dt;
+ dino.y+=dino.vy*dt;
+ dino.h=(dinoDuck&&dino.onGround)?30:48;
+ dino.w=(dinoDuck&&dino.onGround)?52:38;
+ const groundY=DINO_GROUND-dino.h;
+ if(dino.y>=groundY){
+   dino.y=groundY;
+   dino.vy=0;
+   dino.onGround=true;
+ }
+ for(const c of dinoClouds){
+   c.x-=28*dt*dinoSpeed;
+   if(c.x<-80){
+     c.x=DINO_W+Math.random()*160;
+     c.y=34+Math.random()*55;
+     c.w=38+Math.random()*30;
+   }
+ }
+ for(const ob of dinoObstacles)ob.x-=runSpeed*dt;
+ dinoObstacles=dinoObstacles.filter(o=>o.x+o.w>-30);
+ if(!dinoObstacles.length||dinoObstacles[dinoObstacles.length-1].x<DINO_W-(250+Math.random()*190))spawnDinoObstacle();
+ for(const ob of dinoObstacles){
+   if(rectHit(getDinoHitBox(),{x:ob.x+3,y:ob.y+3,w:ob.w-6,h:ob.h-6})){
+     endDino();
+     return;
+   }
+ }
+ updateDinoInfo();
+}
+function getDinoHitBox(){return {x:dino.x+5,y:dino.y+5,w:dino.w-10,h:dino.h-8}}
+function rectHit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function endDino(){
+ dinoRunning=false;
+ cancelAnimationFrame(dinoAnimId);
+ dinoAnimId=null;
+ drawDino();
+ showToast("공룡게임 종료");
+ const finalScore=Math.floor(dinoScoreValue);
+ if(finalScore>0)openScoreNameModal(finalScore,"dino");
+}
+function getDinoBest(){
+ state=normalizeState(state);
+ return Number(state.games&&state.games.dino&&state.games.dino.bestScore)||0;
+}
+function updateDinoInfo(){
+ if(!$("dinoScore"))return;
+ $("dinoScore").textContent=String(Math.floor(dinoScoreValue));
+ $("dinoBest").textContent=String(Math.max(getDinoBest(),Math.floor(dinoScoreValue)));
+ $("dinoSpeed").textContent=`${dinoSpeed.toFixed(1)}x`;
+}
+function drawDino(){
+ if(!dinoCtx)return;
+ const ctx=dinoCtx;
+ ctx.clearRect(0,0,DINO_W,DINO_H);
+ ctx.fillStyle="#f9fafb";
+ ctx.fillRect(0,0,DINO_W,DINO_H);
+ ctx.fillStyle="#d1d5db";
+ for(const c of dinoClouds)drawCloud(ctx,c.x,c.y,c.w);
+ ctx.strokeStyle="#6b7280";
+ ctx.lineWidth=2;
+ ctx.beginPath();ctx.moveTo(0,DINO_GROUND+1);ctx.lineTo(DINO_W,DINO_GROUND+1);ctx.stroke();
+ ctx.fillStyle="#9ca3af";
+ for(let x=dinoGroundX;x<DINO_W;x+=34){
+   ctx.fillRect(x,DINO_GROUND+12,12,2);
+   ctx.fillRect(x+20,DINO_GROUND+22,8,2);
+ }
+ drawDinoChar(ctx);
+ for(const ob of dinoObstacles){
+   if(ob.type==="bird")drawBird(ctx,ob);
+   else drawCactus(ctx,ob);
+ }
+ if(!dinoRunning){
+   ctx.fillStyle="rgba(17,24,39,.82)";
+   ctx.font="900 22px Pretendard, sans-serif";
+   ctx.textAlign="center";
+   ctx.fillText(dinoScoreValue>0?"GAME OVER":"START",DINO_W/2,94);
+   ctx.font="800 13px Pretendard, sans-serif";
+   ctx.fillText("점프 버튼 또는 ↑ / Space",DINO_W/2,118);
+ }
+ if(dinoPaused){
+   ctx.fillStyle="rgba(17,24,39,.82)";
+   ctx.font="900 22px Pretendard, sans-serif";
+   ctx.textAlign="center";
+   ctx.fillText("PAUSE",DINO_W/2,110);
+ }
+ updateDinoInfo();
+}
+function drawCloud(ctx,x,y,w){
+ ctx.beginPath();
+ ctx.arc(x,y+10,w*.22,0,Math.PI*2);
+ ctx.arc(x+w*.25,y,w*.28,0,Math.PI*2);
+ ctx.arc(x+w*.55,y+8,w*.2,0,Math.PI*2);
+ ctx.fill();
+}
+function drawDinoChar(ctx){
+ ctx.fillStyle="#111827";
+ const x=dino.x,y=dino.y,w=dino.w,h=dino.h;
+ if(dinoDuck&&dino.onGround){
+   ctx.fillRect(x,y+8,w,22);
+   ctx.fillRect(x+w-14,y,22,18);
+   ctx.fillRect(x+8,y+28,8,12);
+   ctx.fillRect(x+34,y+28,8,12);
+   ctx.fillStyle="#fff";
+   ctx.fillRect(x+w+2,y+5,4,4);
+ }else{
+   ctx.fillRect(x+8,y+8,23,33);
+   ctx.fillRect(x+22,y,23,23);
+   ctx.fillRect(x+12,y+38,8,12);
+   ctx.fillRect(x+28,y+38,8,12);
+   ctx.fillRect(x,y+22,12,7);
+   ctx.fillStyle="#fff";
+   ctx.fillRect(x+38,y+6,4,4);
+ }
+}
+function drawCactus(ctx,ob){
+ ctx.fillStyle="#166534";
+ ctx.fillRect(ob.x+ob.w*.35,ob.y,ob.w*.3,ob.h);
+ ctx.fillRect(ob.x+ob.w*.1,ob.y+ob.h*.38,ob.w*.25,ob.h*.18);
+ ctx.fillRect(ob.x+ob.w*.62,ob.y+ob.h*.25,ob.w*.25,ob.h*.18);
+}
+function drawBird(ctx,ob){
+ ctx.fillStyle="#111827";
+ ctx.fillRect(ob.x,ob.y+8,ob.w,9);
+ const wingUp=Math.floor(dinoScoreValue/20)%2===0;
+ if(wingUp)ctx.fillRect(ob.x+12,ob.y,14,8);
+ else ctx.fillRect(ob.x+12,ob.y+16,14,8);
+ ctx.fillRect(ob.x+ob.w-4,ob.y+5,8,5);
+}
+
 saveState();
 render();
 setTimeout(()=>{updateGithubStatus();if(isGitEnabled())loadFromGithub({manual:false});},300);
