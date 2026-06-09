@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 7,
-  "updatedAt": "2026-06-09T05:21:33.504Z",
+  "updatedAt": "2026-06-09T05:21:39.878Z",
   "state": {
     "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -63,6 +63,15 @@
             "day": 5,
             "note": "",
             "order": 5
+          },
+          {
+            "id": "ef9cc6cf-6d4e-4785-bbca-628af469883b",
+            "name": "232",
+            "amount": 23323223,
+            "type": "income",
+            "day": 3,
+            "note": "2332",
+            "order": 6
           }
         ]
       }
