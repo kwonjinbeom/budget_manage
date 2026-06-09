@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 8,
-  "updatedAt": "2026-06-09T05:27:29.236Z",
+  "updatedAt": "2026-06-09T05:28:14.129Z",
   "state": {
     "version": 8,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -30,10 +30,10 @@
           },
           {
             "id": "f62368f1-bb27-4e8d-baab-b0013225ca81",
-            "name": "3232",
-            "amount": 3,
-            "type": "income",
-            "day": 2,
+            "name": "사무실 월세",
+            "amount": 140000,
+            "type": "expense",
+            "day": 19,
             "note": "",
             "order": 2
           },
