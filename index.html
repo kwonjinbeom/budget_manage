@@ -310,10 +310,11 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 
 <script>
 const STORAGE_KEY="simple_budget_sheets_v2";
+const LOCAL_STORAGE_KEY="simple_budget_sheets_local_only_v1";
 const GH_KEY="simple_budget_github_setting_v1";
 const GIT_ENABLED_KEY="simple_budget_git_enabled_v1";
 const SUMMARY_COLLAPSED_KEY="simple_budget_summary_collapsed_v1";
-const EXPORT_VERSION=9;
+const EXPORT_VERSION=10;
 const DATA_CRYPT_KEY="jb";
 const AUTOSAVE_DELAY=0;
 
@@ -351,10 +352,15 @@ sheetModalBackdrop.onclick=e=>{};
 $("cancelGithubBtn").onclick=closeGithubModal;$("closeGithubModalBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;
 githubModalBackdrop.onclick=e=>{};
 
+
+function getActiveStorageKey(){
+ return isGitEnabled()?STORAGE_KEY:LOCAL_STORAGE_KEY;
+}
+
 function newId(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
-function loadState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY));if(s&&s.sheets&&s.sheets.length)return s}catch{}const id=newId();return{version:EXPORT_VERSION,currentSheetId:id,sheets:[{id,name:"기본 예산표",items:[]}]}}
+function loadState(){try{const s=JSON.parse(localStorage.getItem(getActiveStorageKey()));if(s&&s.sheets&&s.sheets.length)return s}catch{}const id=newId();return{version:EXPORT_VERSION,currentSheetId:id,sheets:[{id,name:"기본 예산표",items:[]}]}}
 function normalizeState(raw){if(!raw||!Array.isArray(raw.sheets)||!raw.sheets.length)raw=loadState();raw.version=EXPORT_VERSION;raw.sheets=raw.sheets.map((s,si)=>{const ns={id:s.id||newId(),name:s.name||`예산표 ${si+1}`,items:Array.isArray(s.items)?s.items:[]};ns.items=ns.items.map((it,i)=>({id:it.id||newId(),name:it.name||"이름 없음",amount:Number(it.amount)||0,type:it.type==="expense"?"expense":"income",day:it.day===""||it.day==null?"":Number(it.day),note:it.note||"",order:Number.isFinite(Number(it.order))?Number(it.order):i}));ns.items.sort((a,b)=>a.order-b.order).forEach((it,i)=>it.order=i);return ns});if(!raw.currentSheetId||!raw.sheets.some(s=>s.id===raw.currentSheetId))raw.currentSheetId=raw.sheets[0].id;return raw}
-function saveState(){state=normalizeState(state);localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function saveState(){state=normalizeState(state);localStorage.setItem(getActiveStorageKey(),JSON.stringify(state))}
 function commitChange(){saveState();render();scheduleAutoSave()}
 function getCurrentSheet(){let s=state.sheets.find(x=>x.id===state.currentSheetId);if(!s){s=state.sheets[0];state.currentSheetId=s.id;saveState()}return s}
 function money(v){return Number(v||0).toLocaleString("ko-KR")+"원"}
@@ -479,17 +485,27 @@ function setGitEnabled(enabled){
 }
 function toggleGitEnabled(){
  const enabled=gitEnabledToggle.checked;
+
+ // 현재 모드의 데이터를 먼저 현재 모드 저장소에 보존
+ saveState();
+
+ // 모드 변경
  setGitEnabled(enabled);
+ clearTimeout(autoSaveTimer);
+ lastGithubError="";
+
  if(enabled){
-   lastGithubError="";
+   // GitHub 모드는 GitHub용 저장소를 먼저 화면에 로드한 뒤, 원격 data.json을 불러옴
+   state=normalizeState(loadState());
    lastSyncText="GitHub 사용 ON";
-   updateGithubStatus();
+   render();
    loadFromGithub({manual:false});
+   showToast("GitHub 모드");
  }else{
-   clearTimeout(autoSaveTimer);
-   lastGithubError="";
+   // localStorage 모드는 GitHub 저장소와 분리된 local 전용 저장소를 화면에 로드
+   state=normalizeState(loadState());
    lastSyncText="GitHub 사용 OFF · localStorage 모드";
-   updateGithubStatus();
+   render();
    showToast("localStorage 모드");
  }
 }
@@ -506,7 +522,7 @@ function updateGithubStatus(){
  const tokenText=s.token?"토큰 저장됨":"토큰 미설정";
  const errText=lastGithubError?`\n오류: ${lastGithubError}`:"";
  if(!enabled){
-   githubStatus.textContent=`GitHub OFF\n이 기기 localStorage에만 저장됨\n${lastSyncText}${errText}`;
+   githubStatus.textContent=`GitHub OFF\nlocalStorage 전용 데이터 사용 중\n${lastSyncText}${errText}`;
    return;
  }
  githubStatus.textContent=`repo: ${s.owner}/${s.repo}\nfile: ${s.path} · branch: ${s.branch}\n암호화 저장: jb · ${tokenText} · ${lastSyncText}${errText}`;
