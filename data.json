@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 7,
-  "updatedAt": "2026-06-09T05:11:54.050Z",
+  "updatedAt": "2026-06-09T05:14:57.752Z",
   "state": {
     "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -20,22 +20,13 @@
             "order": 0
           },
           {
-            "id": "2861b5e4-38fa-47fb-b9d6-ee8339d3cb57",
-            "name": "22",
-            "amount": 2,
-            "type": "income",
-            "day": 1,
-            "note": "",
-            "order": 1
-          },
-          {
             "id": "07610244-8bd7-4478-b8a0-1c218ee905cf",
             "name": "q",
             "amount": 13,
             "type": "income",
             "day": 12,
             "note": "",
-            "order": 2
+            "order": 1
           },
           {
             "id": "08318bb2-899e-4982-8d9c-8024e5c8e3c6",
@@ -44,7 +35,7 @@
             "type": "income",
             "day": 12,
             "note": "",
-            "order": 3
+            "order": 2
           },
           {
             "id": "854fb5d2-bbcf-4e87-a269-7429d4cbe4c8",
@@ -53,7 +44,7 @@
             "type": "income",
             "day": 12,
             "note": "",
-            "order": 4
+            "order": 3
           }
         ]
       }
