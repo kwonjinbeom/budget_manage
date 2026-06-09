@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 8,
-  "updatedAt": "2026-06-09T05:35:26.849Z",
+  "updatedAt": "2026-06-09T05:36:06.474Z",
   "state": {
     "version": 8,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -45,6 +45,15 @@
             "day": 1,
             "note": "",
             "order": 3
+          },
+          {
+            "id": "2cafe09e-9728-4dac-8bd8-2ab5c6bcaf9d",
+            "name": "하이",
+            "amount": 3333,
+            "type": "income",
+            "day": 12,
+            "note": "ㅎㅇㅎㅇ",
+            "order": 4
           }
         ]
       }
