@@ -383,6 +383,73 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   }
 }
 
+
+.score-btn{
+  border:0;
+  border-radius:14px;
+  background:#111827;
+  color:#fff;
+  font-size:14px;
+  font-weight:950;
+  padding:0 14px;
+  height:42px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.score-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:360px;
+  overflow:auto;
+}
+.score-row{
+  display:grid;
+  grid-template-columns:34px 1fr auto;
+  gap:10px;
+  align-items:center;
+  background:#f9fafb;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:10px 12px;
+}
+.score-rank{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:950;
+}
+.score-name{
+  font-size:14px;
+  font-weight:950;
+  color:#111827;
+  word-break:break-all;
+}
+.score-date{
+  margin-top:2px;
+  font-size:11px;
+  color:#6b7280;
+}
+.score-value{
+  font-size:16px;
+  font-weight:950;
+  color:#111827;
+}
+.score-empty{
+  text-align:center;
+  color:#6b7280;
+  font-size:14px;
+  padding:28px 10px;
+  background:#f9fafb;
+  border-radius:14px;
+}
+
 </style>
 </head>
 <body>
@@ -411,6 +478,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
         <div class="title">테트리스</div>
         <div class="subtitle">왼쪽 메뉴에서 가계부로 돌아갈 수 있어</div>
       </div>
+      <button class="score-btn" id="scoreBoardBtn">스코어</button>
     </div>
 
     <div class="tetris-wrap">
@@ -517,6 +585,39 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 
 <div class="toast" id="toast"></div>
 
+
+<div class="modal-backdrop" id="scoreNameModalBackdrop"><div class="modal-wrap"><div class="modal">
+  <div class="modal-head">
+    <div class="modal-title">스코어 기록</div>
+    <button class="modal-close-btn" id="closeScoreNameBtn">×</button>
+  </div>
+  <div class="field">
+    <label>이름</label>
+    <input id="scoreNameInput" maxlength="20" placeholder="이름 입력">
+  </div>
+  <div class="field">
+    <label>점수</label>
+    <input id="scoreValueInput" readonly>
+  </div>
+  <div class="modal-actions">
+    <button class="ghost" id="skipScoreSaveBtn">닫기</button>
+    <button class="primary" id="saveScoreRecordBtn">기록 저장</button>
+  </div>
+</div></div></div>
+
+<div class="modal-backdrop" id="scoreBoardModalBackdrop"><div class="modal-wrap"><div class="modal">
+  <div class="modal-head">
+    <div class="modal-title">스코어 현황</div>
+    <button class="modal-close-btn" id="closeScoreBoardBtn">×</button>
+  </div>
+  <div class="score-list" id="scoreList"></div>
+  <div class="modal-actions">
+    <button class="danger" id="clearScoreBoardBtn">전체삭제</button>
+    <button class="primary" id="okScoreBoardBtn">확인</button>
+  </div>
+</div></div></div>
+
+
 <script>
 const STORAGE_KEY="simple_budget_sheets_v2";
 const LOCAL_STORAGE_KEY="simple_budget_sheets_local_only_v1";
@@ -545,7 +646,7 @@ const itemModalBackdrop=$("itemModalBackdrop"), itemModalTitle=$("itemModalTitle
 const sheetModalBackdrop=$("sheetModalBackdrop"), sheetModalTitle=$("sheetModalTitle"), sheetNameInput=$("sheetNameInput");
 const githubModalBackdrop=$("githubModalBackdrop"), importFileInput=$("importFileInput");
 
-$("menuBtn").onclick=openDrawer;$("menuBtnTetris").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("showBudgetBtn").onclick=()=>setMainView("budget");$("showTetrisBtn").onclick=()=>setMainView("tetris");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);summaryToggleBtn.onclick=toggleSummary;
+$("menuBtn").onclick=openDrawer;$("menuBtnTetris").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("showBudgetBtn").onclick=()=>setMainView("budget");$("showTetrisBtn").onclick=()=>setMainView("tetris");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);$("scoreBoardBtn").onclick=openScoreBoardModal;summaryToggleBtn.onclick=toggleSummary;
 $("exportBtn").onclick=exportData;$("importBtn").onclick=()=>importFileInput.click();importFileInput.onchange=importData;
 $("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;gitEnabledToggle.onchange=toggleGitEnabled;
 drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
@@ -558,7 +659,7 @@ amountInput.addEventListener("input", formatAmountInput);
 $("cancelSheetBtn").onclick=closeSheetModal;$("closeSheetModalBtn").onclick=closeSheetModal;$("saveSheetBtn").onclick=saveSheetName;
 sheetModalBackdrop.onclick=e=>{};
 
-$("cancelGithubBtn").onclick=closeGithubModal;$("closeGithubModalBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;
+$("cancelGithubBtn").onclick=closeGithubModal;$("closeGithubModalBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;$("closeScoreNameBtn").onclick=closeScoreNameModal;$("skipScoreSaveBtn").onclick=closeScoreNameModal;$("saveScoreRecordBtn").onclick=saveScoreRecord;$("closeScoreBoardBtn").onclick=closeScoreBoardModal;$("okScoreBoardBtn").onclick=closeScoreBoardModal;$("clearScoreBoardBtn").onclick=clearScoreBoard;
 githubModalBackdrop.onclick=e=>{};
 
 
@@ -568,7 +669,7 @@ function getActiveStorageKey(){
 
 function newId(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
 function loadState(){try{const s=JSON.parse(localStorage.getItem(getActiveStorageKey()));if(s&&s.sheets&&s.sheets.length)return s}catch{}const id=newId();return{version:EXPORT_VERSION,currentSheetId:id,sheets:[{id,name:"기본 예산표",items:[]}]}}
-function normalizeState(raw){if(!raw||!Array.isArray(raw.sheets)||!raw.sheets.length)raw=loadState();raw.version=EXPORT_VERSION;raw.sheets=raw.sheets.map((s,si)=>{const ns={id:s.id||newId(),name:s.name||`예산표 ${si+1}`,items:Array.isArray(s.items)?s.items:[]};ns.items=ns.items.map((it,i)=>({id:it.id||newId(),name:it.name||"이름 없음",amount:Number(it.amount)||0,type:it.type==="expense"?"expense":"income",day:it.day===""||it.day==null?"":Number(it.day),note:it.note||"",order:Number.isFinite(Number(it.order))?Number(it.order):i}));ns.items.sort((a,b)=>a.order-b.order).forEach((it,i)=>it.order=i);return ns});if(!raw.currentSheetId||!raw.sheets.some(s=>s.id===raw.currentSheetId))raw.currentSheetId=raw.sheets[0].id;if(!raw.games)raw.games={};if(!raw.games.tetris)raw.games.tetris={bestScore:0};raw.games.tetris.bestScore=Number(raw.games.tetris.bestScore)||0;return raw}
+function normalizeState(raw){if(!raw||!Array.isArray(raw.sheets)||!raw.sheets.length)raw=loadState();raw.version=EXPORT_VERSION;raw.sheets=raw.sheets.map((s,si)=>{const ns={id:s.id||newId(),name:s.name||`예산표 ${si+1}`,items:Array.isArray(s.items)?s.items:[]};ns.items=ns.items.map((it,i)=>({id:it.id||newId(),name:it.name||"이름 없음",amount:Number(it.amount)||0,type:it.type==="expense"?"expense":"income",day:it.day===""||it.day==null?"":Number(it.day),note:it.note||"",order:Number.isFinite(Number(it.order))?Number(it.order):i}));ns.items.sort((a,b)=>a.order-b.order).forEach((it,i)=>it.order=i);return ns});if(!raw.currentSheetId||!raw.sheets.some(s=>s.id===raw.currentSheetId))raw.currentSheetId=raw.sheets[0].id;if(!raw.games)raw.games={};if(!raw.games.tetris)raw.games.tetris={bestScore:0,records:[]};raw.games.tetris.bestScore=Number(raw.games.tetris.bestScore)||0;if(!Array.isArray(raw.games.tetris.records))raw.games.tetris.records=[];raw.games.tetris.records=raw.games.tetris.records.map(r=>({id:r.id||newId(),name:String(r.name||"익명"),score:Number(r.score)||0,dt:r.dt||""})).filter(r=>r.score>0).sort((a,b)=>b.score-a.score).slice(0,50);return raw}
 function saveState(){state=normalizeState(state);localStorage.setItem(getActiveStorageKey(),JSON.stringify(state))}
 function commitChange(){saveState();render();scheduleAutoSave()}
 function getCurrentSheet(){let s=state.sheets.find(x=>x.id===state.currentSheetId);if(!s){s=state.sheets[0];state.currentSheetId=s.id;saveState()}return s}
@@ -609,6 +710,107 @@ function setMainView(view){
    initTetrisIfNeeded();
    drawTetris();
  }
+}
+
+
+let pendingTetrisScore=0;
+
+function getTetrisRecords(){
+ state=normalizeState(state);
+ return state.games.tetris.records||[];
+}
+
+function openScoreNameModal(score){
+ pendingTetrisScore=Number(score)||0;
+ if(pendingTetrisScore<=0)return;
+ $("scoreNameInput").value=localStorage.getItem("simple_budget_last_tetris_name")||"";
+ $("scoreValueInput").value=String(pendingTetrisScore);
+ $("scoreNameModalBackdrop").classList.add("open");
+ setTimeout(()=>$("scoreNameInput").focus(),50);
+}
+
+function closeScoreNameModal(){
+ $("scoreNameModalBackdrop").classList.remove("open");
+ pendingTetrisScore=0;
+}
+
+function saveScoreRecord(){
+ const name=($("scoreNameInput").value||"").trim()||"익명";
+ const score=pendingTetrisScore||Number($("scoreValueInput").value)||0;
+ if(score<=0){
+   closeScoreNameModal();
+   return;
+ }
+ localStorage.setItem("simple_budget_last_tetris_name",name);
+ state=normalizeState(state);
+ state.games.tetris.records.push({
+   id:newId(),
+   name,
+   score,
+   dt:new Date().toISOString()
+ });
+ state.games.tetris.records=state.games.tetris.records
+   .sort((a,b)=>Number(b.score)-Number(a.score))
+   .slice(0,50);
+ if(score>Number(state.games.tetris.bestScore||0)){
+   state.games.tetris.bestScore=score;
+ }
+ closeScoreNameModal();
+ commitChange();
+ updateTetrisInfo();
+ showToast("스코어 저장 완료");
+ openScoreBoardModal();
+}
+
+function formatScoreDate(iso){
+ if(!iso)return "";
+ const d=new Date(iso);
+ if(Number.isNaN(d.getTime()))return "";
+ const yy=String(d.getFullYear()).slice(2);
+ const mm=String(d.getMonth()+1).padStart(2,"0");
+ const dd=String(d.getDate()).padStart(2,"0");
+ const hh=String(d.getHours()).padStart(2,"0");
+ const mi=String(d.getMinutes()).padStart(2,"0");
+ return `${yy}.${mm}.${dd} ${hh}:${mi}`;
+}
+
+function openScoreBoardModal(){
+ renderScoreBoard();
+ $("scoreBoardModalBackdrop").classList.add("open");
+}
+
+function closeScoreBoardModal(){
+ $("scoreBoardModalBackdrop").classList.remove("open");
+}
+
+function renderScoreBoard(){
+ const list=$("scoreList");
+ const records=getTetrisRecords();
+ if(!records.length){
+   list.innerHTML='<div class="score-empty">아직 저장된 스코어가 없어.</div>';
+   return;
+ }
+ list.innerHTML=records.map((r,i)=>`
+   <div class="score-row">
+     <div class="score-rank">${i+1}</div>
+     <div>
+       <div class="score-name">${escapeHtml(r.name)}</div>
+       <div class="score-date">${formatScoreDate(r.dt)}</div>
+     </div>
+     <div class="score-value">${Number(r.score).toLocaleString()}</div>
+   </div>
+ `).join("");
+}
+
+function clearScoreBoard(){
+ if(!confirm("스코어 기록을 전부 삭제할까?"))return;
+ state=normalizeState(state);
+ state.games.tetris.records=[];
+ state.games.tetris.bestScore=0;
+ commitChange();
+ updateTetrisInfo();
+ renderScoreBoard();
+ showToast("스코어 삭제 완료");
 }
 
 /* Tetris */
@@ -815,15 +1017,11 @@ function endTetris(){
  tetrisRunning=false;
  clearInterval(tetrisLoopId);
  tetrisLoopId=null;
- const best=getTetrisBest();
- if(tetrisScoreValue>best){
-   state.games=state.games||{};
-   state.games.tetris=state.games.tetris||{};
-   state.games.tetris.bestScore=tetrisScoreValue;
-   commitChange();
- }
  drawTetris();
  showToast("테트리스 종료");
+ if(tetrisScoreValue>0){
+   openScoreNameModal(tetrisScoreValue);
+ }
 }
 
 function getTetrisBest(){
