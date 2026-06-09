@@ -209,7 +209,8 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 const STORAGE_KEY="simple_budget_sheets_v2";
 const GH_KEY="simple_budget_github_setting_v1";
 const SUMMARY_COLLAPSED_KEY="simple_budget_summary_collapsed_v1";
-const EXPORT_VERSION=8;
+const EXPORT_VERSION=9;
+const DATA_CRYPT_KEY="jb";
 const AUTOSAVE_DELAY=0;
 
 let state=normalizeState(loadState());
@@ -329,6 +330,41 @@ function showToast(message,type="normal"){
  toastTimer=setTimeout(()=>el.classList.remove("show"),1800);
 }
 
+
+function xorCrypt(text,key){
+ let out="";
+ for(let i=0;i<text.length;i++){
+   out+=String.fromCharCode(text.charCodeAt(i)^key.charCodeAt(i%key.length));
+ }
+ return out;
+}
+function encodeBase64Unicode(text){
+ return btoa(unescape(encodeURIComponent(text)));
+}
+function decodeBase64Unicode(text){
+ return decodeURIComponent(escape(atob(text)));
+}
+function encryptBudgetPayload(payload){
+ const plain=JSON.stringify(payload);
+ const xored=xorCrypt(plain,DATA_CRYPT_KEY);
+ return {
+   app:"simple_budget_sheets",
+   encrypted:true,
+   method:"xor-base64",
+   version:EXPORT_VERSION,
+   updatedAt:new Date().toISOString(),
+   data:encodeBase64Unicode(xored)
+ };
+}
+function decryptBudgetPayload(payload){
+ if(payload && payload.encrypted && payload.data){
+   const xored=decodeBase64Unicode(payload.data);
+   const plain=xorCrypt(xored,DATA_CRYPT_KEY);
+   return JSON.parse(plain);
+ }
+ return payload && payload.state ? payload.state : payload;
+}
+
 function getGithubSetting(){try{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true,...JSON.parse(localStorage.getItem(GH_KEY)||"{}")}}catch{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true}}}
 function saveGithubSetting(){const s={owner:$("ghOwnerInput").value.trim(),repo:$("ghRepoInput").value.trim(),branch:$("ghBranchInput").value.trim()||"main",path:$("ghPathInput").value.trim()||"data.json",token:$("ghTokenInput").value.trim(),autoLoad:true,autoSave:true};if(!s.owner||!s.repo||!s.token){alert("Owner, Repo, Token은 필요해.");return}localStorage.setItem(GH_KEY,JSON.stringify(s));closeGithubModal();render();loadFromGithub({manual:false});alert("GitHub 설정 저장 완료. 이제 실행 시 자동 불러오기, 수정 시 자동 저장이 동작해.")}
 function openGithubModal(){const s=getGithubSetting();$("ghOwnerInput").value=s.owner;$("ghRepoInput").value=s.repo;$("ghBranchInput").value=s.branch;$("ghPathInput").value=s.path;$("ghTokenInput").value=s.token;githubModalBackdrop.classList.add("open")}
@@ -337,7 +373,7 @@ function updateGithubStatus(){
  const s=getGithubSetting();
  const tokenText=s.token?"토큰 저장됨":"토큰 미설정";
  const errText=lastGithubError?`\n오류: ${lastGithubError}`:"";
- githubStatus.textContent=`repo: ${s.owner}/${s.repo}\nfile: ${s.path} · branch: ${s.branch}\n${tokenText} · ${lastSyncText}${errText}`;
+ githubStatus.textContent=`repo: ${s.owner}/${s.repo}\nfile: ${s.path} · branch: ${s.branch}\n암호화 저장: jb · ${tokenText} · ${lastSyncText}${errText}`;
 }
 
 function shortErrorText(e){
@@ -369,7 +405,7 @@ function decodeBase64Utf8(str){return decodeURIComponent(escape(atob(str.replace
 async function loadFromGithub({manual=false}={}){
  const s=getGithubSetting();if(!s.token){if(manual){alert("먼저 GitHub 설정에서 토큰을 넣어줘.");openGithubModal()}return}
  try{lastSyncText="GitHub 불러오는 중...";updateGithubStatus();const file=await getGithubFile(s);if(!file){lastSyncText="data.json 없음. 저장하면 생성됨";updateGithubStatus();if(manual)alert("data.json 파일이 아직 없어. 현재 데이터를 GitHub에 먼저 저장하면 생성돼.");return}
- const parsed=JSON.parse(decodeBase64Utf8(file.content));const imported=parsed.state||parsed;if(!imported||!Array.isArray(imported.sheets))throw new Error("invalid data");
+ const parsed=JSON.parse(decodeBase64Utf8(file.content));const imported=decryptBudgetPayload(parsed);if(!imported||!Array.isArray(imported.sheets))throw new Error("invalid data");
  if(manual&&!confirm("GitHub의 data.json 내용으로 현재 화면 데이터가 바뀌어. 계속할까?")){lastSyncText="수동 불러오기 취소";updateGithubStatus();return}
  isApplyingRemote=true;state=normalizeState(imported);lastGithubSha=file.sha;saveState();render();isApplyingRemote=false;lastSyncText=`GitHub 불러오기 완료 ${nowText()}`;updateGithubStatus();if(manual)alert("GitHub 불러오기 완료.")
  }catch(e){console.error(e);isApplyingRemote=false;lastGithubError=shortErrorText(e);lastSyncText=`불러오기 실패 ${nowText()}`;updateGithubStatus();if(manual)alert("GitHub 불러오기 실패: "+lastGithubError)}
@@ -457,12 +493,7 @@ async function saveToGithub({manual=false}={}){
 
        const body={
          message:manual?"manual update budget data":"auto update budget data",
-         content:encodeBase64Utf8(JSON.stringify({
-           app:"simple_budget_sheets",
-           version:EXPORT_VERSION,
-           updatedAt:new Date().toISOString(),
-           state:normalizeState(state)
-         },null,2)),
+         content:encodeBase64Utf8(JSON.stringify(encryptBudgetPayload(normalizeState(state)),null,2)),
          branch:s.branch
        };
 
