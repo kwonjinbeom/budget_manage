@@ -1,14 +1,25 @@
 {
   "app": "simple_budget_sheets",
   "version": 4,
+  "updatedAt": "2026-06-09T04:52:52.109Z",
   "state": {
     "version": 4,
-    "currentSheetId": "default",
+    "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
     "sheets": [
       {
-        "id": "default",
+        "id": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
         "name": "기본 예산표",
-        "items": []
+        "items": [
+          {
+            "id": "d4913710-a72b-43e8-bbdc-9d0265115d97",
+            "name": "집 월세",
+            "amount": 600000,
+            "type": "expense",
+            "day": 1,
+            "note": "",
+            "order": 0
+          }
+        ]
       }
     ]
   }
