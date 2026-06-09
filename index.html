@@ -644,12 +644,20 @@ function toggleSummary(){
 
 function setMainView(view){
  const isTetris=view==="tetris";
- $("budgetView").classList.toggle("active",!isTetris);
- $("tetrisView").classList.toggle("active",isTetris);
- $("addBtn").style.display=isTetris?"none":"block";
- $("showBudgetBtn").classList.toggle("active",!isTetris);
- $("showTetrisBtn").classList.toggle("active",isTetris);
+ const budgetView=$("budgetView");
+ const tetrisView=$("tetrisView");
+ const addBtn=$("addBtn");
+ const budgetBtn=$("showBudgetBtn");
+ const tetrisBtn=$("showTetrisBtn");
+
+ if(budgetView)budgetView.classList.toggle("active",!isTetris);
+ if(tetrisView)tetrisView.classList.toggle("active",isTetris);
+ if(addBtn)addBtn.style.display=isTetris?"none":"block";
+ if(budgetBtn)budgetBtn.classList.toggle("active",!isTetris);
+ if(tetrisBtn)tetrisBtn.classList.toggle("active",isTetris);
+
  closeDrawer();
+
  if(isTetris){
    initTetrisIfNeeded();
    drawTetris();
@@ -1048,7 +1056,7 @@ function initTetrisIfNeeded(){
  updateTetrisInfo("대기");
 }
 function handleTetrisKey(e){
- if(!$("tetrisView").classList.contains("active"))return;
+ if(!$("tetrisView") || !$("tetrisView").classList.contains("active"))return;
  if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Control"," ","p","P"].includes(e.key))e.preventDefault();
  if(e.key==="ArrowLeft")moveTetris(-1);
  else if(e.key==="ArrowRight")moveTetris(1);
@@ -1293,6 +1301,18 @@ function drawTetris(){
  drawNextQueue();
 }
 
+
+// Safe view bindings
+function bindMainViewButtons(){
+ const budgetBtn=$("showBudgetBtn");
+ const tetrisBtn=$("showTetrisBtn");
+ const menuTetrisBtn=$("menuBtnTetris");
+ if(budgetBtn)budgetBtn.onclick=()=>setMainView("budget");
+ if(tetrisBtn)tetrisBtn.onclick=()=>setMainView("tetris");
+ if(menuTetrisBtn)menuTetrisBtn.onclick=openDrawer;
+}
+
+bindMainViewButtons();
 saveState();
 render();
 setTimeout(()=>{updateGithubStatus();if(isGitEnabled())loadFromGithub({manual:false});},300);
