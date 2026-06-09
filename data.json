@@ -1,7 +1,7 @@
 {
   "app": "simple_budget_sheets",
   "version": 7,
-  "updatedAt": "2026-06-09T05:22:12.559Z",
+  "updatedAt": "2026-06-09T05:22:37.373Z",
   "state": {
     "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
@@ -63,6 +63,15 @@
             "day": 3,
             "note": "2332",
             "order": 5
+          },
+          {
+            "id": "6d8a5139-d303-4064-9891-da6110fe4ccf",
+            "name": "sgshhs",
+            "amount": 43,
+            "type": "income",
+            "day": 1,
+            "note": "",
+            "order": 6
           }
         ]
       }
