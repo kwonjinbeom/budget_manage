@@ -105,6 +105,38 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   background:#b91c1c;
 }
 
+
+.summary{
+  position:relative;
+}
+.summary-toggle{
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+  color:white;
+  font-size:18px;
+  font-weight:950;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.summary.collapsed{
+  padding-bottom:16px;
+}
+.summary.collapsed .balance,
+.summary.collapsed .summary-row{
+  display:none;
+}
+.summary.collapsed .summary-label{
+  margin-bottom:0;
+}
+
 </style>
 </head>
 <body>
@@ -114,7 +146,8 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
     <div class="title-area"><div class="title" id="sheetTitle">예산표</div><div class="subtitle" id="subTitle">선택한 지출표 기준으로 계산</div></div>
     <button class="name-btn" id="renameBtn">이름수정</button>
   </div>
-  <section class="summary">
+  <section class="summary" id="summaryBox">
+    <button class="summary-toggle" id="summaryToggleBtn" title="접기/펼치기">⌃</button>
     <div class="summary-label">남은 금액</div><div class="balance" id="balanceAmount">0원</div>
     <div class="summary-row"><div class="summary-card"><div class="label">총 수입</div><div class="amount income" id="incomeAmount">0원</div></div><div class="summary-card"><div class="label">총 지출</div><div class="amount expense" id="expenseAmount">0원</div></div></div>
   </section>
@@ -175,7 +208,8 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 <script>
 const STORAGE_KEY="simple_budget_sheets_v2";
 const GH_KEY="simple_budget_github_setting_v1";
-const EXPORT_VERSION=7;
+const SUMMARY_COLLAPSED_KEY="simple_budget_summary_collapsed_v1";
+const EXPORT_VERSION=8;
 const AUTOSAVE_DELAY=0;
 
 let state=normalizeState(loadState());
@@ -190,13 +224,13 @@ let lastGithubError="";
 let lastSyncText="자동 동기화 대기 중";
 
 const $=id=>document.getElementById(id);
-const sheetTitle=$("sheetTitle"), subTitle=$("subTitle"), balanceAmount=$("balanceAmount"), incomeAmount=$("incomeAmount"), expenseAmount=$("expenseAmount"), list=$("list");
+const sheetTitle=$("sheetTitle"), subTitle=$("subTitle"), balanceAmount=$("balanceAmount"), incomeAmount=$("incomeAmount"), expenseAmount=$("expenseAmount"), list=$("list"), summaryBox=$("summaryBox"), summaryToggleBtn=$("summaryToggleBtn");
 const drawerBackdrop=$("drawerBackdrop"), sheetList=$("sheetList"), githubStatus=$("githubStatus");
 const itemModalBackdrop=$("itemModalBackdrop"), itemModalTitle=$("itemModalTitle"), dayInput=$("dayInput"), nameInput=$("nameInput"), amountInput=$("amountInput"), noteInput=$("noteInput"), incomeTypeBtn=$("incomeTypeBtn"), expenseTypeBtn=$("expenseTypeBtn"), deleteItemBtn=$("deleteItemBtn");
 const sheetModalBackdrop=$("sheetModalBackdrop"), sheetModalTitle=$("sheetModalTitle"), sheetNameInput=$("sheetNameInput");
 const githubModalBackdrop=$("githubModalBackdrop"), importFileInput=$("importFileInput");
 
-$("menuBtn").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);
+$("menuBtn").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);summaryToggleBtn.onclick=toggleSummary;
 $("exportBtn").onclick=exportData;$("importBtn").onclick=()=>importFileInput.click();importFileInput.onchange=importData;
 $("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;
 drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
@@ -222,7 +256,21 @@ function dayText(d){const n=Number(d);return n?`${n}일`:"일자없음"}
 function esc(t){return String(t).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 function nowText(){const d=new Date();return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}:${String(d.getSeconds()).padStart(2,"0")}`}
 
+
+function applySummaryCollapsed(){
+ const collapsed=localStorage.getItem(SUMMARY_COLLAPSED_KEY)==="Y";
+ summaryBox.classList.toggle("collapsed",collapsed);
+ summaryToggleBtn.textContent=collapsed?"⌄":"⌃";
+ summaryToggleBtn.title=collapsed?"펼치기":"접기";
+}
+function toggleSummary(){
+ const collapsed=localStorage.getItem(SUMMARY_COLLAPSED_KEY)==="Y";
+ localStorage.setItem(SUMMARY_COLLAPSED_KEY,collapsed?"N":"Y");
+ applySummaryCollapsed();
+}
+
 function render(){
+ applySummaryCollapsed();
  state=normalizeState(state);const sheet=getCurrentSheet();const items=[...(sheet.items||[])].sort((a,b)=>a.order-b.order);
  const inc=items.filter(i=>i.type==="income").reduce((s,i)=>s+i.amount,0), exp=items.filter(i=>i.type==="expense").reduce((s,i)=>s+i.amount,0);
  sheetTitle.textContent=sheet.name;incomeAmount.textContent=money(inc);expenseAmount.textContent=money(exp);balanceAmount.textContent=money(inc-exp);
