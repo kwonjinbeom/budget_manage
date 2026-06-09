@@ -161,6 +161,75 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   line-height:1;
 }
 
+
+.toggle-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:10px 12px;
+  margin-bottom:8px;
+}
+.toggle-label{
+  font-size:14px;
+  font-weight:900;
+  color:#111827;
+}
+.toggle-sub{
+  font-size:11px;
+  color:#6b7280;
+  margin-top:2px;
+}
+.switch{
+  position:relative;
+  display:inline-block;
+  width:48px;
+  height:28px;
+  flex-shrink:0;
+}
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+.slider{
+  position:absolute;
+  cursor:pointer;
+  inset:0;
+  background:#d1d5db;
+  transition:.18s;
+  border-radius:999px;
+}
+.slider:before{
+  position:absolute;
+  content:"";
+  width:22px;
+  height:22px;
+  left:3px;
+  top:3px;
+  background:white;
+  transition:.18s;
+  border-radius:50%;
+  box-shadow:0 2px 6px rgba(0,0,0,.18);
+}
+.switch input:checked + .slider{
+  background:#111827;
+}
+.switch input:checked + .slider:before{
+  transform:translateX(20px);
+}
+.github-box.git-off{
+  opacity:.55;
+}
+.github-box.git-off .grid2,
+.github-box.git-off #githubSettingBtn,
+.github-box.git-off #testGithubBtn{
+  pointer-events:none;
+}
+
 </style>
 </head>
 <body>
@@ -186,7 +255,17 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
     <button class="new-sheet-btn" id="newSheetBtn">+ 새 지출표 만들기</button>
     <div class="grid2"><button class="side-btn" id="exportBtn">내보내기</button><button class="side-btn" id="importBtn">가져오기</button></div>
     <input class="hidden-file" id="importFileInput" type="file" accept=".json,application/json" />
-    <div class="github-box">
+    <div class="github-box" id="githubBox">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">GitHub 사용</div>
+          <div class="toggle-sub">OFF면 이 기기 localStorage만 사용</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="gitEnabledToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
       <div class="github-title">GitHub 공유 저장</div>
       <div class="grid2"><button class="side-btn" id="loadGithubBtn">수동 불러오기</button><button class="side-btn primary" id="saveGithubBtn">수동 저장</button></div><button class="side-btn" id="testGithubBtn" style="width:100%;margin-top:8px;">연결 테스트</button>
       <button class="side-btn" id="githubSettingBtn" style="width:100%;margin-top:8px;">GitHub 설정</button>
@@ -232,6 +311,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 <script>
 const STORAGE_KEY="simple_budget_sheets_v2";
 const GH_KEY="simple_budget_github_setting_v1";
+const GIT_ENABLED_KEY="simple_budget_git_enabled_v1";
 const SUMMARY_COLLAPSED_KEY="simple_budget_summary_collapsed_v1";
 const EXPORT_VERSION=9;
 const DATA_CRYPT_KEY="jb";
@@ -250,14 +330,14 @@ let lastSyncText="자동 동기화 대기 중";
 
 const $=id=>document.getElementById(id);
 const sheetTitle=$("sheetTitle"), subTitle=$("subTitle"), balanceAmount=$("balanceAmount"), incomeAmount=$("incomeAmount"), expenseAmount=$("expenseAmount"), list=$("list"), summaryBox=$("summaryBox"), summaryToggleBtn=$("summaryToggleBtn");
-const drawerBackdrop=$("drawerBackdrop"), sheetList=$("sheetList"), githubStatus=$("githubStatus");
+const drawerBackdrop=$("drawerBackdrop"), sheetList=$("sheetList"), githubStatus=$("githubStatus"), githubBox=$("githubBox"), gitEnabledToggle=$("gitEnabledToggle");
 const itemModalBackdrop=$("itemModalBackdrop"), itemModalTitle=$("itemModalTitle"), dayInput=$("dayInput"), nameInput=$("nameInput"), amountInput=$("amountInput"), noteInput=$("noteInput"), incomeTypeBtn=$("incomeTypeBtn"), expenseTypeBtn=$("expenseTypeBtn"), deleteItemBtn=$("deleteItemBtn");
 const sheetModalBackdrop=$("sheetModalBackdrop"), sheetModalTitle=$("sheetModalTitle"), sheetNameInput=$("sheetNameInput");
 const githubModalBackdrop=$("githubModalBackdrop"), importFileInput=$("importFileInput");
 
 $("menuBtn").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);summaryToggleBtn.onclick=toggleSummary;
 $("exportBtn").onclick=exportData;$("importBtn").onclick=()=>importFileInput.click();importFileInput.onchange=importData;
-$("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;
+$("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;gitEnabledToggle.onchange=toggleGitEnabled;
 drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
 
 $("addBtn").onclick=()=>openItemModal();$("cancelItemBtn").onclick=closeItemModal;$("closeItemModalBtn").onclick=closeItemModal;$("saveItemBtn").onclick=saveItem;deleteItemBtn.onclick=deleteItem;
@@ -389,14 +469,46 @@ function decryptBudgetPayload(payload){
  return payload && payload.state ? payload.state : payload;
 }
 
+
+function isGitEnabled(){
+ const value=localStorage.getItem(GIT_ENABLED_KEY);
+ return value===null ? true : value==="Y";
+}
+function setGitEnabled(enabled){
+ localStorage.setItem(GIT_ENABLED_KEY,enabled?"Y":"N");
+}
+function toggleGitEnabled(){
+ const enabled=gitEnabledToggle.checked;
+ setGitEnabled(enabled);
+ if(enabled){
+   lastGithubError="";
+   lastSyncText="GitHub 사용 ON";
+   updateGithubStatus();
+   loadFromGithub({manual:false});
+ }else{
+   clearTimeout(autoSaveTimer);
+   lastGithubError="";
+   lastSyncText="GitHub 사용 OFF · localStorage 모드";
+   updateGithubStatus();
+   showToast("localStorage 모드");
+ }
+}
+
 function getGithubSetting(){try{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true,...JSON.parse(localStorage.getItem(GH_KEY)||"{}")}}catch{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true}}}
-function saveGithubSetting(){const s={owner:$("ghOwnerInput").value.trim(),repo:$("ghRepoInput").value.trim(),branch:$("ghBranchInput").value.trim()||"main",path:$("ghPathInput").value.trim()||"data.json",token:$("ghTokenInput").value.trim(),autoLoad:true,autoSave:true};if(!s.owner||!s.repo||!s.token){alert("Owner, Repo, Token은 필요해.");return}localStorage.setItem(GH_KEY,JSON.stringify(s));closeGithubModal();render();loadFromGithub({manual:false});alert("GitHub 설정 저장 완료. 이제 실행 시 자동 불러오기, 수정 시 자동 저장이 동작해.")}
+function saveGithubSetting(){const s={owner:$("ghOwnerInput").value.trim(),repo:$("ghRepoInput").value.trim(),branch:$("ghBranchInput").value.trim()||"main",path:$("ghPathInput").value.trim()||"data.json",token:$("ghTokenInput").value.trim(),autoLoad:true,autoSave:true};if(!s.owner||!s.repo||!s.token){alert("Owner, Repo, Token은 필요해.");return}localStorage.setItem(GH_KEY,JSON.stringify(s));closeGithubModal();render();if(isGitEnabled())loadFromGithub({manual:false});alert("GitHub 설정 저장 완료.")}
 function openGithubModal(){const s=getGithubSetting();$("ghOwnerInput").value=s.owner;$("ghRepoInput").value=s.repo;$("ghBranchInput").value=s.branch;$("ghPathInput").value=s.path;$("ghTokenInput").value=s.token;githubModalBackdrop.classList.add("open")}
 function closeGithubModal(){githubModalBackdrop.classList.remove("open")}
 function updateGithubStatus(){
+ const enabled=isGitEnabled();
+ if(gitEnabledToggle)gitEnabledToggle.checked=enabled;
+ if(githubBox)githubBox.classList.toggle("git-off",!enabled);
  const s=getGithubSetting();
  const tokenText=s.token?"토큰 저장됨":"토큰 미설정";
  const errText=lastGithubError?`\n오류: ${lastGithubError}`:"";
+ if(!enabled){
+   githubStatus.textContent=`GitHub OFF\n이 기기 localStorage에만 저장됨\n${lastSyncText}${errText}`;
+   return;
+ }
  githubStatus.textContent=`repo: ${s.owner}/${s.repo}\nfile: ${s.path} · branch: ${s.branch}\n암호화 저장: jb · ${tokenText} · ${lastSyncText}${errText}`;
 }
 
@@ -427,6 +539,7 @@ function encodeBase64Utf8(str){return btoa(unescape(encodeURIComponent(str)))}
 function decodeBase64Utf8(str){return decodeURIComponent(escape(atob(str.replace(/\n/g,""))))}
 
 async function loadFromGithub({manual=false}={}){
+ if(!isGitEnabled()){if(manual)showToast("GitHub OFF 상태야");updateGithubStatus();return}
  const s=getGithubSetting();if(!s.token){if(manual){alert("먼저 GitHub 설정에서 토큰을 넣어줘.");openGithubModal()}return}
  try{lastSyncText="GitHub 불러오는 중...";updateGithubStatus();const file=await getGithubFile(s);if(!file){lastSyncText="data.json 없음. 저장하면 생성됨";updateGithubStatus();if(manual)alert("data.json 파일이 아직 없어. 현재 데이터를 GitHub에 먼저 저장하면 생성돼.");return}
  const parsed=JSON.parse(decodeBase64Utf8(file.content));const imported=decryptBudgetPayload(parsed);if(!imported||!Array.isArray(imported.sheets))throw new Error("invalid data");
@@ -437,6 +550,7 @@ async function loadFromGithub({manual=false}={}){
 
 function scheduleAutoSave(){
  if(isApplyingRemote)return;
+ if(!isGitEnabled()){lastSyncText="localStorage 저장 완료";updateGithubStatus();return}
  const s=getGithubSetting();if(!s.token||!s.autoSave)return;
  clearTimeout(autoSaveTimer);
  requestGithubSave({manual:false});
@@ -445,6 +559,7 @@ function scheduleAutoSave(){
 
 
 async function testGithubConnection(){
+ if(!isGitEnabled()){showToast("GitHub OFF 상태야");updateGithubStatus();return}
  const s=getGithubSetting();
  if(!s.token){
    alert("먼저 GitHub 설정에서 토큰을 넣어줘.");
@@ -476,6 +591,7 @@ async function testGithubConnection(){
 }
 
 function requestGithubSave({manual=false}={}){
+ if(!isGitEnabled()){if(manual)showToast("GitHub OFF 상태야");updateGithubStatus();return}
  if(isGithubSaving){
    hasPendingGithubSave=true;
    lastSyncText="저장 중. 다음 저장 대기...";
@@ -486,6 +602,7 @@ function requestGithubSave({manual=false}={}){
 }
 
 async function saveToGithub({manual=false}={}){
+ if(!isGitEnabled()){if(manual)showToast("GitHub OFF 상태야");updateGithubStatus();return}
  const s=getGithubSetting();
  if(!s.token){
    if(manual){
@@ -584,7 +701,7 @@ async function saveToGithub({manual=false}={}){
 }
 saveState();
 render();
-setTimeout(()=>loadFromGithub({manual:false}),300);
+setTimeout(()=>{updateGithubStatus();if(isGitEnabled())loadFromGithub({manual:false});},300);
 </script>
 </body>
 </html>
