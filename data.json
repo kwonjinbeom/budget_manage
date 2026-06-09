@@ -1,9 +1,9 @@
 {
   "app": "simple_budget_sheets",
-  "version": 5,
-  "updatedAt": "2026-06-09T05:02:28.464Z",
+  "version": 7,
+  "updatedAt": "2026-06-09T05:07:37.914Z",
   "state": {
-    "version": 5,
+    "version": 7,
     "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
     "sheets": [
       {
@@ -36,6 +36,15 @@
             "day": 12,
             "note": "",
             "order": 2
+          },
+          {
+            "id": "08318bb2-899e-4982-8d9c-8024e5c8e3c6",
+            "name": "ddd",
+            "amount": 123,
+            "type": "income",
+            "day": 12,
+            "note": "",
+            "order": 3
           }
         ]
       }
