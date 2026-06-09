@@ -177,7 +177,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   <div class="type-row"><button class="type-btn income active" id="incomeTypeBtn">+ 수입</button><button class="type-btn expense" id="expenseTypeBtn">- 지출</button></div>
   <div class="field"><label>일자</label><input class="input" id="dayInput" type="number" inputmode="numeric" min="1" max="31" placeholder="예: 25"></div>
   <div class="field"><label>이름</label><input class="input" id="nameInput" placeholder="예: 월급, 식비, 카드값"></div>
-  <div class="field"><label>금액</label><input class="input" id="amountInput" type="number" inputmode="numeric" placeholder="예: 50000"></div>
+  <div class="field"><label>금액</label><input class="input" id="amountInput" type="text" inputmode="numeric" placeholder="예: 50,000"></div>
   <div class="field"><label>비고</label><textarea class="input" id="noteInput" placeholder="예: 매달 고정, 카드 자동이체"></textarea></div>
   <div class="modal-actions"><button class="action-btn cancel-btn" id="cancelItemBtn">취소</button><button class="action-btn save-btn" id="saveItemBtn">저장</button></div>
   <button class="delete-btn" id="deleteItemBtn">삭제</button>
@@ -238,6 +238,7 @@ drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
 $("addBtn").onclick=()=>openItemModal();$("cancelItemBtn").onclick=closeItemModal;$("saveItemBtn").onclick=saveItem;deleteItemBtn.onclick=deleteItem;
 itemModalBackdrop.onclick=e=>{if(e.target===itemModalBackdrop||e.target.classList.contains("modal-wrap"))closeItemModal()};
 incomeTypeBtn.onclick=()=>setType("income");expenseTypeBtn.onclick=()=>setType("expense");
+amountInput.addEventListener("input", formatAmountInput);
 
 $("cancelSheetBtn").onclick=closeSheetModal;$("saveSheetBtn").onclick=saveSheetName;
 sheetModalBackdrop.onclick=e=>{if(e.target===sheetModalBackdrop||e.target.classList.contains("modal-wrap"))closeSheetModal()};
@@ -283,10 +284,28 @@ function render(){
 function renderSheetList(){sheetList.innerHTML="";state.sheets.forEach(sheet=>{const inc=(sheet.items||[]).filter(i=>i.type==="income").reduce((s,i)=>s+i.amount,0),exp=(sheet.items||[]).filter(i=>i.type==="expense").reduce((s,i)=>s+i.amount,0);const row=document.createElement("div");row.className="sheet-item"+(sheet.id===state.currentSheetId?" active":"");row.innerHTML=`<div style="min-width:0"><div class="sheet-name">${esc(sheet.name)}</div><div class="sheet-meta">남은 금액 ${money(inc-exp)}</div></div><div class="sheet-actions"><button class="sheet-edit">수정</button><button class="sheet-delete">삭제</button></div>`;row.onclick=()=>{state.currentSheetId=sheet.id;commitChange();closeDrawer()};row.querySelector(".sheet-edit").onclick=e=>{e.stopPropagation();openSheetModal("rename",sheet.id)};row.querySelector(".sheet-delete").onclick=e=>{e.stopPropagation();deleteSheet(sheet.id)};sheetList.appendChild(row)})}
 function openDrawer(){drawerBackdrop.classList.add("open");renderSheetList();updateGithubStatus()}function closeDrawer(){drawerBackdrop.classList.remove("open")}
 
-function openItemModal(item=null){editingItemId=item?item.id:null;if(item){itemModalTitle.textContent="수정";dayInput.value=item.day||"";nameInput.value=item.name;amountInput.value=item.amount;noteInput.value=item.note||"";setType(item.type);deleteItemBtn.classList.add("show")}else{itemModalTitle.textContent="추가";dayInput.value="";nameInput.value="";amountInput.value="";noteInput.value="";setType("income");deleteItemBtn.classList.remove("show")}itemModalBackdrop.classList.add("open");setTimeout(()=>dayInput.focus(),100)}
+
+function onlyDigits(value){
+ return String(value||"").replace(/[^\d]/g,"");
+}
+function formatNumberWithComma(value){
+ const digits=onlyDigits(value);
+ if(!digits)return "";
+ return Number(digits).toLocaleString("ko-KR");
+}
+function formatAmountInput(){
+ const formatted=formatNumberWithComma(amountInput.value);
+ amountInput.value=formatted;
+}
+function getAmountNumber(){
+ const digits=onlyDigits(amountInput.value);
+ return digits?Number(digits):0;
+}
+
+function openItemModal(item=null){editingItemId=item?item.id:null;if(item){itemModalTitle.textContent="수정";dayInput.value=item.day||"";nameInput.value=item.name;amountInput.value=formatNumberWithComma(item.amount);noteInput.value=item.note||"";setType(item.type);deleteItemBtn.classList.add("show")}else{itemModalTitle.textContent="추가";dayInput.value="";nameInput.value="";amountInput.value="";noteInput.value="";setType("income");deleteItemBtn.classList.remove("show")}itemModalBackdrop.classList.add("open");setTimeout(()=>dayInput.focus(),100)}
 function closeItemModal(){itemModalBackdrop.classList.remove("open");editingItemId=null}
 function setType(t){selectedType=t;incomeTypeBtn.classList.toggle("active",t==="income");expenseTypeBtn.classList.toggle("active",t==="expense")}
-function saveItem(){const sheet=getCurrentSheet(),dv=dayInput.value.trim(),day=dv===""?"":Number(dv),name=nameInput.value.trim(),amount=Number(amountInput.value),note=noteInput.value.trim();if(day!==""&&(!Number.isInteger(day)||day<1||day>31)){alert("일자는 1~31 사이로 입력해줘.");dayInput.focus();return}if(!name){alert("이름을 입력해줘.");nameInput.focus();return}if(!amount||amount<=0){alert("금액을 입력해줘.");amountInput.focus();return}if(!sheet.items)sheet.items=[];if(editingItemId)sheet.items=sheet.items.map(i=>i.id!==editingItemId?i:{...i,day,name,amount,note,type:selectedType});else sheet.items.push({id:newId(),day,name,amount,note,type:selectedType,order:sheet.items.length});normalizeOrder(sheet);closeItemModal();commitChange()}
+function saveItem(){const sheet=getCurrentSheet(),dv=dayInput.value.trim(),day=dv===""?"":Number(dv),name=nameInput.value.trim(),amount=getAmountNumber(),note=noteInput.value.trim();if(day!==""&&(!Number.isInteger(day)||day<1||day>31)){alert("일자는 1~31 사이로 입력해줘.");dayInput.focus();return}if(!name){alert("이름을 입력해줘.");nameInput.focus();return}if(!amount||amount<=0){alert("금액을 입력해줘.");amountInput.focus();return}if(!sheet.items)sheet.items=[];if(editingItemId)sheet.items=sheet.items.map(i=>i.id!==editingItemId?i:{...i,day,name,amount,note,type:selectedType});else sheet.items.push({id:newId(),day,name,amount,note,type:selectedType,order:sheet.items.length});normalizeOrder(sheet);closeItemModal();commitChange()}
 function deleteItem(){const sheet=getCurrentSheet();if(!editingItemId)return;if(!confirm("삭제할까?"))return;sheet.items=(sheet.items||[]).filter(i=>i.id!==editingItemId);normalizeOrder(sheet);closeItemModal();commitChange()}
 function moveItem(id,dir){const sheet=getCurrentSheet();const items=[...(sheet.items||[])].sort((a,b)=>a.order-b.order);const idx=items.findIndex(i=>i.id===id),t=idx+dir;if(idx<0||t<0||t>=items.length)return;[items[idx],items[t]]=[items[t],items[idx]];items.forEach((i,n)=>i.order=n);sheet.items=items;commitChange()}
 function normalizeOrder(sheet){sheet.items=[...(sheet.items||[])].sort((a,b)=>a.order-b.order);sheet.items.forEach((i,n)=>i.order=n)}
