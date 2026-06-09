@@ -1,62 +1,8 @@
 {
   "app": "simple_budget_sheets",
-  "version": 8,
-  "updatedAt": "2026-06-09T05:36:06.474Z",
-  "state": {
-    "version": 8,
-    "currentSheetId": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
-    "sheets": [
-      {
-        "id": "141b0a8f-89fd-4ced-a846-65358b3ce5e7",
-        "name": "지출표~~~260609",
-        "items": [
-          {
-            "id": "400a9530-efd7-4df6-9bbf-cdeeab07b561",
-            "name": "급여",
-            "amount": 3100000,
-            "type": "income",
-            "day": 26,
-            "note": "",
-            "order": 0
-          },
-          {
-            "id": "d4913710-a72b-43e8-bbdc-9d0265115d97",
-            "name": "집 월세",
-            "amount": 600000,
-            "type": "expense",
-            "day": 1,
-            "note": "",
-            "order": 1
-          },
-          {
-            "id": "f62368f1-bb27-4e8d-baab-b0013225ca81",
-            "name": "사무실 월세",
-            "amount": 140000,
-            "type": "expense",
-            "day": 19,
-            "note": "",
-            "order": 2
-          },
-          {
-            "id": "6d8a5139-d303-4064-9891-da6110fe4ccf",
-            "name": "123123",
-            "amount": 43,
-            "type": "income",
-            "day": 1,
-            "note": "",
-            "order": 3
-          },
-          {
-            "id": "2cafe09e-9728-4dac-8bd8-2ab5c6bcaf9d",
-            "name": "하이",
-            "amount": 3333,
-            "type": "income",
-            "day": 12,
-            "note": "ㅎㅇㅎㅇ",
-            "order": 4
-          }
-        ]
-      }
-    ]
-  }
+  "encrypted": true,
+  "method": "xor-base64",
+  "version": 9,
+  "updatedAt": "2026-06-09T05:37:14.414Z",
+  "data": "EUAcBxgRAw0EQFBbRkAJFxgQDwweMQIHDxYjBkhYSFNeUwhSC1oMT1JbDAZHVgkHDk8LWl5UR1RfUV9aCFEJB18HXUBGQBkKDwceEUhYMRlICw5AUEBbVlsAWgNSBEdaUwQOT14BDwZHA1JWXE9cV1lXUgBZAQ9XD1VITkgMCw8PQFBA7Kaq7Le+7ZC2HBQcWFRaVFpbSE5ICx4HBxFIWDEZSAsOQFBAXlJaA1NXWVJHBwwGXU9eBgxUR1sIAAxPCQYPBwsAWlUIV1xTSE5IDAsPD0BQQOq5o+yWjkhOSAMHDR8MHkBQUVtSWlJaUkZAHhsaB0hYSAsEAQUPD0BGQA4DE0BQUFxOSAwFFg9AUEBITkgNGAYPEEhYWh9GGUgLDkBQQA5WU1NZVVtSRwNdUAhPXlEPWkcACAYJT1MGWlBcV1tTXwZTVUhOSAwLDw9AUEDsprtC7Jq+7IWaSE5IAwcNHwweQFBUWlJaUlpOSBYTEg9AUEAPGhoHBBEPQEZADgMTQFBTRkAEDR4HSFhIQEZABRAOBxhAUFMXThFAAwZIWEgEXFBZVFIEW08IAFhVR1YPWg5PCAMLAEcAWlJbUVhQXwELWltARkAEAwcHSFhI7IOO662e7IqGSuyatuyFkkBGQAsPBRcEFkhYW1ZaUlpSRkAeGxoHSFhIBxISDwwZB0hOSAYLG0hYW1tGQAQNHgdIWEhARkAFEA4HGEBQUBdOEUADBkhYSFQOWgtXW1FTTw5RWlFHVlpUXk9TWlNTRwYLVFtTWgQPVgkBDEBGQAQDBwdIWEhTWFFbUFlARkALDwUXBBZIWF5RRkAeGxoHSFhICwQBBQ8PQEZADgMTQFBTRkAEDR4HSFhIQEZABRAOBxhAUFEXThFAAwZIWEhQCQMMB1pbD09TVVhaR1YOAwlPUgAOWkdQCwBfAVwACQMMWw5ARkAEAwcHSFhI7ZS67JyeQEZACw8FFwQWSFhZUVlRRkAeGxoHSFhICwQBBQ8PQEZADgMTQFBTWE5IDAUWD0BQQOOEpOOEpeOEpOOEpUhOSA0YBg8QSFheH0YZSAsOQFBAXlpeVwxQDlVHB19WWE9eUF9RR1tbUQlPCQFSWgxQWAZfVQ4DSE5IDAsPD0BQQA4GDgYOQEZACw8FFwQWSFhYTkgWExIPQFBAAwwJDQcHSE5IBgsbSFhYTkgMBRYPQFBA7JS+QEZABRAOBxhAUFcXPxc/Fw=="
 }
