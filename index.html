@@ -468,7 +468,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 .dino-score-row span:first-child{color:#9ca3af;font-weight:800}
 .dino-score-row span:last-child{font-weight:950}
 #dinoCanvas{
-  width:100%;max-width:720px;height:auto;display:block;margin:0 auto;
+  width:100%;max-width:820px;height:auto;display:block;margin:0 auto;
   background:#f9fafb;border-radius:12px
 }
 .dino-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -568,7 +568,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
           <div class="dino-score-row"><span>최고</span><span id="dinoBest">0</span></div>
           <div class="dino-score-row"><span>속도</span><span id="dinoSpeed">1.0x</span></div>
         </div>
-        <canvas id="dinoCanvas" width="720" height="260"></canvas>
+        <canvas id="dinoCanvas" width="820" height="320"></canvas>
       </div>
 
       <div class="dino-controls">
@@ -1535,11 +1535,11 @@ let dinoClouds=[];
 let dinoGroundX=0;
 let dinoDuck=false;
 let dino={x:70,y:0,w:38,h:48,vy:0,onGround:true};
-const DINO_W=720;
-const DINO_H=260;
-const DINO_GROUND=205;
-const DINO_GRAVITY=1900;
-const DINO_JUMP=-690;
+const DINO_W=820;
+const DINO_H=320;
+const DINO_GROUND=255;
+const DINO_GRAVITY=2600;
+const DINO_JUMP=-660;
 
 function initDinoIfNeeded(){
  if(dinoCtx)return;
@@ -1577,7 +1577,7 @@ function resetDino(){
  dinoScoreValue=0;
  dinoSpeed=1;
  dinoObstacles=[];
- dinoClouds=[{x:160,y:56,w:46},{x:430,y:38,w:62},{x:650,y:70,w:42}];
+ dinoClouds=[{x:160,y:74,w:46},{x:450,y:50,w:62},{x:720,y:88,w:42}];
  dinoGroundX=0;
  dinoDuck=false;
  dino={x:70,y:DINO_GROUND-48,w:38,h:48,vy:0,onGround:true};
@@ -1609,7 +1609,7 @@ function jumpDino(){
 }
 function setDinoDuck(flag){dinoDuck=!!flag}
 function spawnDinoObstacle(){
- const isBird=dinoScoreValue>250&&Math.random()<0.28;
+ const isBird=dinoScoreValue>600&&Math.random()<0.22;
  const size=28+Math.random()*16;
  dinoObstacles.push({
    x:DINO_W+20,
@@ -1629,9 +1629,10 @@ function dinoLoop(ts){
  dinoAnimId=requestAnimationFrame(dinoLoop);
 }
 function updateDino(dt){
- dinoScoreValue+=dt*65*dinoSpeed;
- dinoSpeed=1+Math.min(dinoScoreValue/900,1.9);
- const runSpeed=285*dinoSpeed;
+ dinoScoreValue+=dt*55*dinoSpeed;
+ const speedBaseScore=Math.max(0,dinoScoreValue-300);
+ dinoSpeed=1+Math.min(speedBaseScore/1800,1.35);
+ const runSpeed=245*dinoSpeed;
  dinoGroundX=(dinoGroundX-runSpeed*dt)%34;
  dino.vy+=DINO_GRAVITY*dt;
  dino.y+=dino.vy*dt;
@@ -1647,13 +1648,13 @@ function updateDino(dt){
    c.x-=28*dt*dinoSpeed;
    if(c.x<-80){
      c.x=DINO_W+Math.random()*160;
-     c.y=34+Math.random()*55;
+     c.y=44+Math.random()*75;
      c.w=38+Math.random()*30;
    }
  }
  for(const ob of dinoObstacles)ob.x-=runSpeed*dt;
  dinoObstacles=dinoObstacles.filter(o=>o.x+o.w>-30);
- if(!dinoObstacles.length||dinoObstacles[dinoObstacles.length-1].x<DINO_W-(250+Math.random()*190))spawnDinoObstacle();
+ if(!dinoObstacles.length||dinoObstacles[dinoObstacles.length-1].x<DINO_W-(330+Math.random()*240))spawnDinoObstacle();
  for(const ob of dinoObstacles){
    if(rectHit(getDinoHitBox(),{x:ob.x+3,y:ob.y+3,w:ob.w-6,h:ob.h-6})){
      endDino();
@@ -1708,15 +1709,15 @@ function drawDino(){
    ctx.fillStyle="rgba(17,24,39,.82)";
    ctx.font="900 22px Pretendard, sans-serif";
    ctx.textAlign="center";
-   ctx.fillText(dinoScoreValue>0?"GAME OVER":"START",DINO_W/2,94);
+   ctx.fillText(dinoScoreValue>0?"GAME OVER":"START",DINO_W/2,122);
    ctx.font="800 13px Pretendard, sans-serif";
-   ctx.fillText("점프 버튼 또는 ↑ / Space",DINO_W/2,118);
+   ctx.fillText("점프 버튼 또는 ↑ / Space",DINO_W/2,148);
  }
  if(dinoPaused){
    ctx.fillStyle="rgba(17,24,39,.82)";
    ctx.font="900 22px Pretendard, sans-serif";
    ctx.textAlign="center";
-   ctx.fillText("PAUSE",DINO_W/2,110);
+   ctx.fillText("PAUSE",DINO_W/2,142);
  }
  updateDinoInfo();
 }
