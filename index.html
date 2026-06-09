@@ -145,8 +145,8 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 <script>
 const STORAGE_KEY="simple_budget_sheets_v2";
 const GH_KEY="simple_budget_github_setting_v1";
-const EXPORT_VERSION=5;
-const AUTOSAVE_DELAY=1000;
+const EXPORT_VERSION=7;
+const AUTOSAVE_DELAY=0;
 
 let state=normalizeState(loadState());
 let editingItemId=null, selectedType="income", sheetMode="rename", editingSheetId=null;
@@ -240,9 +240,9 @@ function scheduleAutoSave(){
  if(isApplyingRemote)return;
  const s=getGithubSetting();if(!s.token||!s.autoSave)return;
  clearTimeout(autoSaveTimer);
- lastSyncText="변경됨. 자동 저장 대기 중...";
+ lastSyncText="변경됨. 즉시 저장 중...";
  updateGithubStatus();
- autoSaveTimer=setTimeout(()=>saveToGithub({manual:false}),AUTOSAVE_DELAY);
+ saveToGithub({manual:false});
 }
 
 async function saveToGithub({manual=false}={}){
