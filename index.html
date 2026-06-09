@@ -245,43 +245,7 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 .tetris-wrap{
   display:flex;
   flex-direction:column;
-  gap:12px;
-}
-.tetris-top{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:8px;
-}
-.tetris-stat{
-  background:#f3f4f6;
-  border-radius:14px;
-  padding:10px;
-  text-align:center;
-}
-.tetris-stat-label{
-  color:#6b7280;
-  font-size:11px;
-  font-weight:800;
-  margin-bottom:3px;
-}
-.tetris-stat-value{
-  color:#111827;
-  font-size:16px;
-  font-weight:950;
-}
-.tetris-board-wrap{
-  display:flex;
-  justify-content:center;
-  background:#111827;
-  border-radius:20px;
-  padding:12px;
-}
-#tetrisCanvas{
-  width:min(300px,calc(100vw - 70px));
-  max-width:300px;
-  height:auto;
-  background:#030712;
-  border-radius:10px;
+  gap:10px;
 }
 .tetris-actions{
   display:grid;
@@ -296,23 +260,146 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   color:#111827;
   font-size:15px;
   font-weight:950;
-  height:46px;
+  min-height:44px;
   cursor:pointer;
+}
+.tetris-stage{
+  display:grid;
+  grid-template-columns:minmax(160px,240px) 92px;
+  gap:10px;
+  align-items:stretch;
+  justify-content:center;
+  background:#111827;
+  border-radius:20px;
+  padding:10px;
+}
+.tetris-board-wrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+#tetrisCanvas{
+  width:min(240px,calc(100vw - 150px));
+  max-width:240px;
+  height:auto;
+  background:#030712;
+  border-radius:10px;
+}
+.tetris-side{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:8px;
+  min-width:86px;
+}
+.tetris-score-box{
+  background:rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:9px 8px;
+}
+.tetris-score-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:6px;
+  color:#fff;
+  font-size:12px;
+  line-height:1.45;
+}
+.tetris-score-row span:first-child{
+  color:#9ca3af;
+  font-weight:800;
+}
+.tetris-score-row span:last-child{
+  font-weight:950;
+}
+.next-title{
+  color:#9ca3af;
+  font-size:11px;
+  font-weight:900;
+  margin:0 0 6px;
+}
+.next-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.next-canvas{
+  width:72px;
+  height:54px;
+  background:#030712;
+  border-radius:10px;
 }
 .tetris-controls{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
+  grid-template-areas:
+    ". rotate drop"
+    "left down right";
   gap:8px;
 }
-.tetris-controls .wide{
-  grid-column:span 3;
-  background:#111827;
-  color:#fff;
+#tetrisLeftBtn{grid-area:left}
+#tetrisDownBtn{grid-area:down}
+#tetrisRightBtn{grid-area:right}
+#tetrisRotateBtn{grid-area:rotate}
+#tetrisDropBtn{grid-area:drop;background:#111827;color:#fff}
+.key-hint{
+  display:block;
+  margin-top:2px;
+  font-size:10px;
+  font-weight:800;
+  opacity:.65;
 }
 .tetris-help{
   font-size:12px;
   color:#6b7280;
   line-height:1.45;
+}
+@media (max-width:390px){
+  .tetris-stage{
+    grid-template-columns:minmax(150px,210px) 82px;
+    gap:8px;
+    padding:8px;
+  }
+  #tetrisCanvas{
+    width:min(210px,calc(100vw - 135px));
+  }
+  .next-canvas{
+    width:64px;
+    height:48px;
+  }
+}
+
+
+.view-page{display:none}
+.view-page.active{display:block}
+.tetris-page{
+  padding-bottom:92px;
+}
+.tetris-page .tetris-wrap{
+  gap:10px;
+}
+.tetris-page .tetris-stage{
+  grid-template-columns:minmax(160px,240px) 92px;
+  max-width:360px;
+  margin:0 auto;
+}
+.tetris-page #tetrisCanvas{
+  width:min(240px,calc(100vw - 150px));
+}
+.menu-section-btn{
+  height:48px;
+  border:0;
+  border-radius:15px;
+  background:#f3f4f6;
+  color:#111827;
+  font-size:16px;
+  font-weight:950;
+  cursor:pointer;
+}
+.menu-section-btn.active{
+  background:#111827;
+  color:#fff;
 }
 
 </style>
@@ -331,14 +418,59 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
   </section>
   <div class="section-title-row"><div class="section-title">수입 / 지출 리스트</div><div class="sort-hint">↑↓ 순서변경</div></div>
   <section class="list" id="list"></section>
+  </div>
+
+  <div id="tetrisView" class="view-page tetris-page">
+    <div class="header">
+      <button class="menu-btn" id="menuBtnTetris">☰</button>
+      <div class="title-area"><div class="title">테트리스</div><div class="subtitle">PC와 휴대폰 모두 조작 가능</div></div>
+    </div>
+
+    <div class="tetris-wrap">
+      <div class="tetris-actions">
+        <button id="tetrisStartBtn">시작</button>
+        <button id="tetrisPauseBtn">일시정지</button>
+        <button id="tetrisRestartBtn">다시시작</button>
+      </div>
+
+      <div class="tetris-stage">
+        <div class="tetris-board-wrap">
+          <canvas id="tetrisCanvas" width="240" height="480"></canvas>
+        </div>
+        <div class="tetris-side">
+          <div class="tetris-score-box">
+            <div class="tetris-score-row"><span>점수</span><span id="tetrisScore">0</span></div>
+            <div class="tetris-score-row"><span>최고</span><span id="tetrisBest">0</span></div>
+          </div>
+          <div>
+            <div class="next-title">다음 3개</div>
+            <div class="next-list">
+              <canvas class="next-canvas" id="nextCanvas0" width="72" height="54"></canvas>
+              <canvas class="next-canvas" id="nextCanvas1" width="72" height="54"></canvas>
+              <canvas class="next-canvas" id="nextCanvas2" width="72" height="54"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tetris-controls">
+        <button id="tetrisRotateBtn">↻<span class="key-hint">Ctrl</span></button>
+        <button id="tetrisDropBtn">⤓<span class="key-hint">↑</span></button>
+        <button id="tetrisLeftBtn">←</button>
+        <button id="tetrisDownBtn">↓</button>
+        <button id="tetrisRightBtn">→</button>
+      </div>
+      <div class="tetris-help">PC: ←/→ 이동, Ctrl 회전, ↑ 바로 떨구기, ↓ 내리기, P 일시정지</div>
+    </div>
+  </div>
 </main>
 <button class="fab" id="addBtn">+ 추가</button>
 
 <div class="drawer-backdrop" id="drawerBackdrop">
   <aside class="drawer">
     <div class="drawer-head"><div class="drawer-title">지출표 목록</div><button class="drawer-close" id="drawerCloseBtn">×</button></div>
+    <div class="grid2"><button class="menu-section-btn active" id="showBudgetBtn">가계부</button><button class="menu-section-btn" id="showTetrisBtn">테트리스</button></div>
     <button class="new-sheet-btn" id="newSheetBtn">+ 새 지출표 만들기</button>
-    <button class="game-btn" id="openTetrisBtn">테트리스 하기</button>
     <div class="grid2"><button class="side-btn" id="exportBtn">내보내기</button><button class="side-btn" id="importBtn">가져오기</button></div>
     <input class="hidden-file" id="importFileInput" type="file" accept=".json,application/json" />
     <div class="github-box" id="githubBox">
@@ -398,27 +530,40 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 <div class="modal-backdrop" id="tetrisModalBackdrop"><div class="modal-wrap"><div class="modal">
   <div class="modal-head"><div class="modal-title">테트리스</div><button class="modal-close-btn" id="closeTetrisModalBtn">×</button></div>
   <div class="tetris-wrap">
-    <div class="tetris-top">
-      <div class="tetris-stat"><div class="tetris-stat-label">점수</div><div class="tetris-stat-value" id="tetrisScore">0</div></div>
-      <div class="tetris-stat"><div class="tetris-stat-label">최고</div><div class="tetris-stat-value" id="tetrisBest">0</div></div>
-      <div class="tetris-stat"><div class="tetris-stat-label">상태</div><div class="tetris-stat-value" id="tetrisState">대기</div></div>
-    </div>
-    <div class="tetris-board-wrap">
-      <canvas id="tetrisCanvas" width="300" height="600"></canvas>
-    </div>
     <div class="tetris-actions">
       <button id="tetrisStartBtn">시작</button>
       <button id="tetrisPauseBtn">일시정지</button>
-      <button id="tetrisResetBestBtn">기록초기화</button>
+      <button id="tetrisRestartBtn">다시시작</button>
     </div>
+
+    <div class="tetris-stage">
+      <div class="tetris-board-wrap">
+        <canvas id="tetrisCanvas" width="240" height="480"></canvas>
+      </div>
+      <div class="tetris-side">
+        <div class="tetris-score-box">
+          <div class="tetris-score-row"><span>점수</span><span id="tetrisScore">0</span></div>
+          <div class="tetris-score-row"><span>최고</span><span id="tetrisBest">0</span></div>
+        </div>
+        <div>
+          <div class="next-title">다음 3개</div>
+          <div class="next-list">
+            <canvas class="next-canvas" id="nextCanvas0" width="72" height="54"></canvas>
+            <canvas class="next-canvas" id="nextCanvas1" width="72" height="54"></canvas>
+            <canvas class="next-canvas" id="nextCanvas2" width="72" height="54"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="tetris-controls">
+      <button id="tetrisRotateBtn">↻<span class="key-hint">Ctrl</span></button>
+      <button id="tetrisDropBtn">⤓<span class="key-hint">↑</span></button>
       <button id="tetrisLeftBtn">←</button>
-      <button id="tetrisRotateBtn">↻</button>
-      <button id="tetrisRightBtn">→</button>
       <button id="tetrisDownBtn">↓</button>
-      <button id="tetrisDropBtn" class="wide">바로 떨구기</button>
+      <button id="tetrisRightBtn">→</button>
     </div>
-    <div class="tetris-help">PC: ←/→ 이동, ↑ 회전, ↓ 내리기, Space 바로 떨구기, P 일시정지<br>폰: 아래 버튼으로 조작</div>
+    <div class="tetris-help">PC: ←/→ 이동, Ctrl 회전, ↑ 바로 떨구기, ↓ 내리기, P 일시정지</div>
   </div>
 </div></div></div>
 
@@ -451,7 +596,7 @@ const itemModalBackdrop=$("itemModalBackdrop"), itemModalTitle=$("itemModalTitle
 const sheetModalBackdrop=$("sheetModalBackdrop"), sheetModalTitle=$("sheetModalTitle"), sheetNameInput=$("sheetNameInput");
 const githubModalBackdrop=$("githubModalBackdrop"), importFileInput=$("importFileInput");
 
-$("menuBtn").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("openTetrisBtn").onclick=openTetrisModal;$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);summaryToggleBtn.onclick=toggleSummary;
+$("menuBtn").onclick=openDrawer;$("menuBtnTetris").onclick=openDrawer;$("drawerCloseBtn").onclick=closeDrawer;$("newSheetBtn").onclick=()=>openSheetModal("new");$("showBudgetBtn").onclick=()=>setMainView("budget");$("showTetrisBtn").onclick=()=>setMainView("tetris");$("renameBtn").onclick=()=>openSheetModal("rename",state.currentSheetId);summaryToggleBtn.onclick=toggleSummary;
 $("exportBtn").onclick=exportData;$("importBtn").onclick=()=>importFileInput.click();importFileInput.onchange=importData;
 $("loadGithubBtn").onclick=()=>loadFromGithub({manual:true});$("saveGithubBtn").onclick=()=>requestGithubSave({manual:true});$("testGithubBtn").onclick=testGithubConnection;$("githubSettingBtn").onclick=openGithubModal;gitEnabledToggle.onchange=toggleGitEnabled;
 drawerBackdrop.onclick=e=>{if(e.target===drawerBackdrop)closeDrawer()};
@@ -464,7 +609,7 @@ amountInput.addEventListener("input", formatAmountInput);
 $("cancelSheetBtn").onclick=closeSheetModal;$("closeSheetModalBtn").onclick=closeSheetModal;$("saveSheetBtn").onclick=saveSheetName;
 sheetModalBackdrop.onclick=e=>{};
 
-$("cancelGithubBtn").onclick=closeGithubModal;$("closeGithubModalBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;$("closeTetrisModalBtn").onclick=closeTetrisModal;
+$("cancelGithubBtn").onclick=closeGithubModal;$("closeGithubModalBtn").onclick=closeGithubModal;$("saveGithubSettingBtn").onclick=saveGithubSetting;
 githubModalBackdrop.onclick=e=>{};
 
 
@@ -494,6 +639,21 @@ function toggleSummary(){
  const collapsed=localStorage.getItem(SUMMARY_COLLAPSED_KEY)==="Y";
  localStorage.setItem(SUMMARY_COLLAPSED_KEY,collapsed?"N":"Y");
  applySummaryCollapsed();
+}
+
+
+function setMainView(view){
+ const isTetris=view==="tetris";
+ $("budgetView").classList.toggle("active",!isTetris);
+ $("tetrisView").classList.toggle("active",isTetris);
+ $("addBtn").style.display=isTetris?"none":"block";
+ $("showBudgetBtn").classList.toggle("active",!isTetris);
+ $("showTetrisBtn").classList.toggle("active",isTetris);
+ closeDrawer();
+ if(isTetris){
+   initTetrisIfNeeded();
+   drawTetris();
+ }
 }
 
 function render(){
@@ -849,11 +1009,11 @@ async function saveToGithub({manual=false}={}){
 /* Tetris */
 const TETRIS_COLS=10;
 const TETRIS_ROWS=20;
-const TETRIS_BLOCK=30;
+const TETRIS_BLOCK=24;
 let tetrisCtx=null;
 let tetrisBoard=[];
 let tetrisPiece=null;
-let tetrisNext=null;
+let tetrisNextQueue=[];
 let tetrisScoreValue=0;
 let tetrisRunning=false;
 let tetrisPaused=false;
@@ -870,21 +1030,13 @@ const TETRIS_SHAPES=[
  {name:"Z",color:"#f87171",shape:[[1,1,0],[0,1,1]]}
 ];
 
-function openTetrisModal(){
- closeDrawer();
- $("tetrisModalBackdrop").classList.add("open");
- initTetrisIfNeeded();
- drawTetris();
-}
-function closeTetrisModal(){
- $("tetrisModalBackdrop").classList.remove("open");
-}
 function initTetrisIfNeeded(){
  if(tetrisCtx)return;
  const canvas=$("tetrisCanvas");
  tetrisCtx=canvas.getContext("2d");
  $("tetrisStartBtn").onclick=startTetris;
  $("tetrisPauseBtn").onclick=toggleTetrisPause;
+ $("tetrisRestartBtn").onclick=startTetris;
  $("tetrisResetBestBtn").onclick=resetTetrisBest;
  $("tetrisLeftBtn").onclick=()=>moveTetris(-1);
  $("tetrisRightBtn").onclick=()=>moveTetris(1);
@@ -896,11 +1048,12 @@ function initTetrisIfNeeded(){
  updateTetrisInfo("대기");
 }
 function handleTetrisKey(e){
- if(!$("tetrisModalBackdrop").classList.contains("open"))return;
- if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"," ","p","P"].includes(e.key))e.preventDefault();
+ if(!$("tetrisView").classList.contains("active"))return;
+ if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Control"," ","p","P"].includes(e.key))e.preventDefault();
  if(e.key==="ArrowLeft")moveTetris(-1);
  else if(e.key==="ArrowRight")moveTetris(1);
- else if(e.key==="ArrowUp")rotateTetrisPiece();
+ else if(e.key==="Control")rotateTetrisPiece();
+ else if(e.key==="ArrowUp")hardDropTetris();
  else if(e.key==="ArrowDown")softDropTetris();
  else if(e.key===" ")hardDropTetris();
  else if(e.key==="p"||e.key==="P")toggleTetrisPause();
@@ -908,7 +1061,7 @@ function handleTetrisKey(e){
 function resetTetrisBoard(){
  tetrisBoard=Array.from({length:TETRIS_ROWS},()=>Array(TETRIS_COLS).fill(null));
  tetrisPiece=null;
- tetrisNext=randomTetrisPiece();
+ tetrisNextQueue=[randomTetrisPiece(),randomTetrisPiece(),randomTetrisPiece()];
  tetrisScoreValue=0;
  tetrisRunning=false;
  tetrisPaused=false;
@@ -926,10 +1079,11 @@ function randomTetrisPiece(){
  };
 }
 function spawnTetrisPiece(){
- tetrisPiece=tetrisNext||randomTetrisPiece();
+ if(!tetrisNextQueue.length)tetrisNextQueue=[randomTetrisPiece(),randomTetrisPiece(),randomTetrisPiece()];
+ tetrisPiece=tetrisNextQueue.shift();
  tetrisPiece.x=Math.floor((TETRIS_COLS-tetrisPiece.shape[0].length)/2);
  tetrisPiece.y=0;
- tetrisNext=randomTetrisPiece();
+ tetrisNextQueue.push(randomTetrisPiece());
  if(collidesTetris(tetrisPiece.x,tetrisPiece.y,tetrisPiece.shape)){
    endTetris();
  }
@@ -1066,11 +1220,11 @@ function resetTetrisBest(){
  state.games.tetris={bestScore:0};
  commitChange();
  updateTetrisInfo(tetrisRunning?(tetrisPaused?"정지":"진행"):"대기");
+ drawNextQueue();
 }
 function updateTetrisInfo(status){
  $("tetrisScore").textContent=String(tetrisScoreValue);
  $("tetrisBest").textContent=String(Math.max(getTetrisBest(),tetrisScoreValue));
- $("tetrisState").textContent=status;
 }
 function drawCell(x,y,color){
  tetrisCtx.fillStyle=color;
@@ -1079,6 +1233,37 @@ function drawCell(x,y,color){
  tetrisCtx.lineWidth=2;
  tetrisCtx.strokeRect(x*TETRIS_BLOCK,y*TETRIS_BLOCK,TETRIS_BLOCK,TETRIS_BLOCK);
 }
+
+function drawNextPiece(canvas,piece){
+ if(!canvas)return;
+ const ctx=canvas.getContext("2d");
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="#030712";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ if(!piece)return;
+ const size=12;
+ const shape=piece.shape;
+ const w=shape[0].length*size;
+ const h=shape.length*size;
+ const ox=Math.floor((canvas.width-w)/2);
+ const oy=Math.floor((canvas.height-h)/2);
+ for(let r=0;r<shape.length;r++){
+   for(let c=0;c<shape[r].length;c++){
+     if(!shape[r][c])continue;
+     ctx.fillStyle=piece.color;
+     ctx.fillRect(ox+c*size,oy+r*size,size,size);
+     ctx.strokeStyle="#111827";
+     ctx.lineWidth=1;
+     ctx.strokeRect(ox+c*size,oy+r*size,size,size);
+   }
+ }
+}
+function drawNextQueue(){
+ for(let i=0;i<3;i++){
+   drawNextPiece($("nextCanvas"+i),tetrisNextQueue[i]);
+ }
+}
+
 function drawTetris(){
  if(!tetrisCtx)return;
  tetrisCtx.clearRect(0,0,TETRIS_COLS*TETRIS_BLOCK,TETRIS_ROWS*TETRIS_BLOCK);
@@ -1105,6 +1290,7 @@ function drawTetris(){
    }
  }
  updateTetrisInfo(tetrisRunning?(tetrisPaused?"정지":"진행"):"대기");
+ drawNextQueue();
 }
 
 saveState();
