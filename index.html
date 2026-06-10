@@ -754,15 +754,23 @@ textarea.input{height:72px;resize:none;padding-top:12px;line-height:1.35}.input:
 
 
 <script>
-const STORAGE_KEY="simple_budget_sheets_v2";
-const LOCAL_STORAGE_KEY="simple_budget_sheets_local_only_v1";
-const GH_KEY="simple_budget_github_setting_v1";
-const GIT_ENABLED_KEY="simple_budget_git_enabled_v1";
-const SUMMARY_COLLAPSED_KEY="simple_budget_summary_collapsed_v1";
+const APP_SCOPE=(location.pathname.split("/").filter(Boolean)[0]||"root").replace(/[^a-zA-Z0-9_-]/g,"_");
+const DEFAULT_REPO=APP_SCOPE==="root"?"budget_manage":APP_SCOPE;
+const LEGACY_STORAGE_KEY="simple_budget_sheets_v2";
+const LEGACY_LOCAL_STORAGE_KEY="simple_budget_sheets_local_only_v1";
+const LEGACY_GH_KEY="simple_budget_github_setting_v1";
+const LEGACY_GIT_ENABLED_KEY="simple_budget_git_enabled_v1";
+const LEGACY_SUMMARY_COLLAPSED_KEY="simple_budget_summary_collapsed_v1";
+const STORAGE_KEY=`${LEGACY_STORAGE_KEY}_${APP_SCOPE}`;
+const LOCAL_STORAGE_KEY=`${LEGACY_LOCAL_STORAGE_KEY}_${APP_SCOPE}`;
+const GH_KEY=`${LEGACY_GH_KEY}_${APP_SCOPE}`;
+const GIT_ENABLED_KEY=`${LEGACY_GIT_ENABLED_KEY}_${APP_SCOPE}`;
+const SUMMARY_COLLAPSED_KEY=`${LEGACY_SUMMARY_COLLAPSED_KEY}_${APP_SCOPE}`;
 const EXPORT_VERSION=10;
 const DATA_CRYPT_KEY="jb";
 const AUTOSAVE_DELAY=0;
 
+migrateScopedLocalStorage();
 let state=normalizeState(loadState());
 let editingItemId=null, selectedType="income", sheetMode="rename", editingSheetId=null;
 let autoSaveTimer=null;
@@ -800,6 +808,38 @@ githubModalBackdrop.onclick=e=>{};
 
 function getActiveStorageKey(){
  return isGitEnabled()?STORAGE_KEY:LOCAL_STORAGE_KEY;
+}
+
+function migrateScopedLocalStorage(){
+ try{
+   const legacyGhRaw=localStorage.getItem(LEGACY_GH_KEY);
+   let legacyGh=null;
+   if(legacyGhRaw)legacyGh=JSON.parse(legacyGhRaw);
+   const legacyRepo=legacyGh&&legacyGh.repo?String(legacyGh.repo):"";
+   const belongsToThisRepo=legacyRepo===APP_SCOPE||legacyRepo===DEFAULT_REPO;
+
+   if(belongsToThisRepo&&legacyGhRaw&&!localStorage.getItem(GH_KEY)){
+     localStorage.setItem(GH_KEY,legacyGhRaw);
+   }
+   if(belongsToThisRepo&&!localStorage.getItem(GIT_ENABLED_KEY)){
+     const v=localStorage.getItem(LEGACY_GIT_ENABLED_KEY);
+     if(v!==null)localStorage.setItem(GIT_ENABLED_KEY,v);
+   }
+   if(belongsToThisRepo&&!localStorage.getItem(STORAGE_KEY)){
+     const v=localStorage.getItem(LEGACY_STORAGE_KEY);
+     if(v!==null)localStorage.setItem(STORAGE_KEY,v);
+   }
+   if(belongsToThisRepo&&!localStorage.getItem(LOCAL_STORAGE_KEY)){
+     const v=localStorage.getItem(LEGACY_LOCAL_STORAGE_KEY);
+     if(v!==null)localStorage.setItem(LOCAL_STORAGE_KEY,v);
+   }
+   if(!localStorage.getItem(SUMMARY_COLLAPSED_KEY)){
+     const v=localStorage.getItem(LEGACY_SUMMARY_COLLAPSED_KEY);
+     if(v!==null)localStorage.setItem(SUMMARY_COLLAPSED_KEY,v);
+   }
+ }catch(e){
+   console.warn("localStorage scope migration skipped",e);
+ }
 }
 
 function newId(){return crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random())}
@@ -1385,7 +1425,7 @@ function toggleGitEnabled(){
  }
 }
 
-function getGithubSetting(){try{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true,...JSON.parse(localStorage.getItem(GH_KEY)||"{}")}}catch{return{owner:"kwonjinbeom",repo:"budget_manage",branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true}}}
+function getGithubSetting(){try{return{owner:"kwonjinbeom",repo:DEFAULT_REPO,branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true,...JSON.parse(localStorage.getItem(GH_KEY)||"{}")}}catch{return{owner:"kwonjinbeom",repo:DEFAULT_REPO,branch:"main",path:"data.json",token:"",autoLoad:true,autoSave:true}}}
 function saveGithubSetting(){const s={owner:$("ghOwnerInput").value.trim(),repo:$("ghRepoInput").value.trim(),branch:$("ghBranchInput").value.trim()||"main",path:$("ghPathInput").value.trim()||"data.json",token:$("ghTokenInput").value.trim(),autoLoad:true,autoSave:true};if(!s.owner||!s.repo||!s.token){alert("Owner, Repo, Token은 필요해.");return}localStorage.setItem(GH_KEY,JSON.stringify(s));closeGithubModal();render();if(isGitEnabled())loadFromGithub({manual:false});alert("GitHub 설정 저장 완료.")}
 function openGithubModal(){const s=getGithubSetting();$("ghOwnerInput").value=s.owner;$("ghRepoInput").value=s.repo;$("ghBranchInput").value=s.branch;$("ghPathInput").value=s.path;$("ghTokenInput").value=s.token;githubModalBackdrop.classList.add("open")}
 function closeGithubModal(){githubModalBackdrop.classList.remove("open")}
@@ -1445,11 +1485,9 @@ async function loadFromGithub({manual=false}={}){
    updateGithubStatus();
    alert("GitHub 불러오기 실패: "+lastGithubError);
  }else{
-   setGitEnabled(false);
-   state=normalizeState(loadState());
-   lastSyncText=`GitHub 불러오기 실패 → localStorage 모드 전환 ${nowText()}`;
-   render();
-   showToast("GitHub 실패 · localStorage 모드","error");
+   lastSyncText=`GitHub 불러오기 실패 ${nowText()}`;
+   updateGithubStatus();
+   showToast("GitHub 불러오기 실패","error");
  }
 }
 }
